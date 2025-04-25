@@ -8,6 +8,10 @@
 #include <string.h>
 #include <assert.h>
 
+//forward declarations
+struct Link;
+struct Document;
+
 //LINK STRUCT:
 typedef struct {
     int id;
@@ -27,6 +31,7 @@ typedef struct {
 //FUNCTION DECLARATIONS:
 Document* document_desserialize(char* path);
 Document* load_documents_from_folder(const char* folder_path);
+void print_document_details(const Document* doc);
 void print_documents(const Document* head);
 void free_document(Document* doc);
 void free_documents(Document* head);
