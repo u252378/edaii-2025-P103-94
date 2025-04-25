@@ -1,3 +1,4 @@
+//in this file we will implement the document linear search functionality 
 #include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -5,34 +6,37 @@
 #include "document.h"
 #include "query.h"
 
+//helper function: checks if keyword appears in the given text.
 bool contains_keyword(const char* text, const char* keyword) {
-    return strstr(text, keyword) != NULL;
+    return strstr(text, keyword) != NULL; //IMPORTANT: strstr returns a pointer if keyword is found.
 }
 
+//determines whether a document matches all query criteria:
 bool document_matches_query(const Document* doc, const Query* query) {
-    bool or_matched = false;
-    bool has_or = false;
+    bool or_matched = false; //keeps track if any OR keyword matched.
+    bool has_or = false; //keeps track if the query contains any OR keyword.
 
     for (const Query* q = query; q != NULL; q = q->next) {
-        bool in_title = contains_keyword(doc->title, q->word);
-        bool in_body = contains_keyword(doc->body, q->word);
-        bool found = in_title || in_body;
+        bool in_title = contains_keyword(doc->title, q->word); //check in title
+        bool in_body = contains_keyword(doc->body, q->word); //check in body 
+        bool found = in_title || in_body; //this will be true if keyword is found ANYWHERE.
 
         if (q->type == INCLUDE && !found)
-            return false;
+            return false; //if required keyword not found, reject document.
 
         if (q->type == EXCLUDE && found)
-            return false;
+            return false; //if excluded keyword is found, reject document
 
         if (q->type == OR) {
-            has_or = true;
-            if (found) or_matched = true;
+            has_or = true; //this marks that we have an OR condition.
+            if (found) or_matched = true; //if one OR keyword matched, mark as matched.
         }
     }
 
-    return has_or ? or_matched : true;
+    return has_or ? or_matched : true; //if ORs exist, return true only if one matched
 }
 
+//searches through all documents and returns those matching the query:
 Document* search_documents(const Document* all_docs, const Query* query, int max_results) {
     Document* result_head = NULL;
     Document* result_tail = NULL;

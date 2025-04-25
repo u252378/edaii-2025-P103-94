@@ -1,4 +1,4 @@
-#ifndef SEARCH_H
+#ifndef SEARCH_H //we include guard to prevent multiple inclusion of this header file.
 #define SEARCH_H
 
 #include "document.h"
