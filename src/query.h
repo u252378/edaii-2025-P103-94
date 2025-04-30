@@ -15,7 +15,7 @@ typedef struct {
 
 
 
-void add_keyword(QueryNode **head, const char *keyword);
+void add_keyword(QueryList *query_list, const char *keyword);
 
 
 
