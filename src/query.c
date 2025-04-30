@@ -78,13 +78,8 @@ void add_keyword(QueryList *query_list, const char *keyword) {
   if (!new_node -> keyword) {
     perror("Memory allocation failed");
 
-
-
-
-
-    // free(new_node);
-
-
+    // freeing the allocate node to avoid memory that will not be used
+    free(new_node);
 
     return;
   }
@@ -180,4 +175,78 @@ void print_query(const Query* head) {
         head = head->next;
     }
     printf("NULL\n");
+}
+
+
+
+
+// This is a function to initilaise the queue of queries
+void init_queue_query(QueueQueries *queue) {
+  queue -> front = 0;
+  queue -> rear = -1;
+  queue -> amount_current_elements = 0;
+
+  for (int i = 0; i < QUEUE_SIZE; i++) {
+    queue -> elements[i] = NULL;
+  }
+}
+
+// This is a function to enqueue the queries, overwriting the oldest query
+void enqueue_queries(QueueQueries *queue, const char *keyword) {
+  
+  // move the rear pointer in a ciruclar way, so that it does not exceeds the max size of queue
+  queue -> rear = (queue -> rear + 1) % QUEUE_SIZE;
+
+  // move front pointer if queue is full, because oldest query is at front position
+  if (queue -> amount_current_elements == QUEUE_SIZE) {
+
+    // freeing memory of keyword that is going to be overwritten, it is front because it is queue (FIFO)
+    free(queue -> elements[queue -> front]);
+
+    // seting freed space to NULL
+    queue -> elements[queue -> front] = NULL;
+
+    queue -> front = (queue -> front + 1) % QUEUE_SIZE;
+  } else { // for the case query is not full, the number of elements in queue is increased
+    queue -> amount_current_elements++;
+  }
+
+  // allocate space for keyword string
+  char* copy = malloc(strlen(keyword) + 1);
+
+  // handles memory allocation error
+  if (!copy) {
+    perror("Memory allocation failed");
+    return;
+  }
+
+  // copy keyword into allocated memory
+  strcpy(copy, keyword);
+
+  // add keyword string to queue
+  queue -> elements[queue -> rear] = copy;
+}
+
+// This is a function to print the queue that only contains the 3 last queries
+void print_last_queries(QueueQueries *queue) {
+  printf("The last 3 queries are:\n");
+
+  for(int i = 0; i < queue -> amount_current_elements; i++) {
+
+    // calculate index using front pointer and i, considering it is a ciruclar queue
+    int index = (queue -> front + i) % QUEUE_SIZE;
+
+    printf("%s\n", queue -> elements[index]);
+  }
+}
+
+// This is a function to free the queue of queries
+void free_queue_queries(QueueQueries *queue) {
+  for (int i = 0; i < queue -> amount_current_elements; i++) {
+
+    // calculate index using front pointer and i, considering it is a circular queue
+    int index = (queue -> front + i) % QUEUE_SIZE;
+
+    free(queue -> elements[index]);
+  }
 }
