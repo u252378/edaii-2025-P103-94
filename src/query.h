@@ -1,6 +1,28 @@
 #ifndef QUERY_H
 #define QUERY_H
 
+
+// This is a data structure for a node in the query linked list
+typedef struct {
+    char *keyword;
+    struct QueryNode *next;
+} QueryNode;
+
+// This is a data structure for the query linked list, containing pointer to head
+typedef struct {
+    QueryNode *head;
+} QueryList;
+
+
+
+void add_keyword(QueryNode **head, const char *keyword);
+
+
+
+
+
+
+
 typedef enum { 
     INCLUDE, EXCLUDE, OR 
 } QueryType;
