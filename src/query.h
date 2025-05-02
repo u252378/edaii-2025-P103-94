@@ -30,7 +30,7 @@ QueryList * create_query_list(void);
 void free_query_list(QueryList *list);
 void add_keyword(QueryList *query_list, const char *keyword, QueryType type);
 QueryList* parse_query(const char* input);
-void print_query_list(const QueryList* head); //used for debugging.
+void print_query_list(const QueryList* list); //used for debugging.
 
 //Queue functions:
 void init_queue_query(QueueQueries *queue);
