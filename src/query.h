@@ -2,6 +2,9 @@
 #define QUERY_H
 #define QUEUE_SIZE 3
 
+typedef enum { 
+    INCLUDE, EXCLUDE, OR 
+} QueryType;
 
 // This is a data structure for a node in the query linked list
 typedef struct {
@@ -22,33 +25,17 @@ typedef struct {
     int amount_current_elements;
 } QueueQueries;
 
+//query list functions: 
+QueryList * create_query_list(void);
+void free_query_list(QueryList *list);
+void add_keyword(QueryList *query_list, const char *keyword, QueryType type);
+QueryList* parse_query(const char* input);
+void print_query_list(const QueryList* head); //used for debugging.
 
-void add_keyword(QueryList *query_list, const char *keyword);
-
-
-
+//Queue functions:
 void init_queue_query(QueueQueries *queue);
 void enqueue_queries(QueueQueries *queue, const char *keyword);
 void print_last_queries(QueueQueries *queue);
 void free_queue_queries(QueueQueries *queue);
 
-
-
-
-
-
-
-typedef enum { 
-    INCLUDE, EXCLUDE, OR 
-} QueryType;
-
-typedef struct Query {
-    char* word;
-    QueryType type;
-    struct Query* next;
-} Query;
-
-Query* parse_query(const char* input);
-void free_query(Query* head);
-void print_query(const Query* head); //used for debugging.
 #endif
