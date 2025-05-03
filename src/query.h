@@ -9,6 +9,7 @@ typedef enum {
 // This is a data structure for a node in the query linked list
 typedef struct {
     char *keyword;
+    QueryType type;
     struct QueryNode *next;
 } QueryNode;
 
