@@ -1,31 +1,25 @@
-#ifndef HASHMAP_H //prevent multiple inclusions of this header file
-#define HASHMAP_H
+#ifndef HASHMAP_H //prevents multiple inclusions of this header file
+#define HASHMAP_H //marks the beginning of the header definition
 
-#define TABLE_SIZE 100 //define the size of the hash table (number of buckets)
+#include "document.h"
 
-// Structure representing a single key-value pair in the hashmap
-typedef struct entry {
-    char* key;           // Pointer to a dynamically allocated key string
-    int value;           // Value associated with the key
-    struct entry* next;  // Pointer to the next entry (for handling collisions using chaining)
-} Entry;
+//first, we will define a structure of the node in the hash map's linked list (which we will use for separate chaining)
+typedef struct HashNode {
+    char* key; //example: document ID
+    Document* value; //pointer to the associated Document
+    struct HashNode* next; //pointer to the next node in the chain (for avoiding collisions)
+} HashNode;
 
-// Structure representing the hashmap itself
+//now, we define the HashMap structure itself:
 typedef struct {
-    Entry* table[TABLE_SIZE];  // Array of pointers to linked lists (buckets)
+    int size; //number of buckets in the hash table
+    HashNode** buckets; //array of pointers to HashNode chains (the table)
 } HashMap;
 
-// Function to create and initialize a new HashMap
-HashMap* create_hashmap();
+//Hashmap functions: 
+HashMap* createHashMap(int size); //function to create a new hash map with the given number of buckets:
+void insertToHashMap(HashMap* map, const char* key, Document* value); //inserts a key-value pair (document ID and Document*) into the map
+Document* getFromHashMap(HashMap* map, const char* key); //retrieves the Document* associated with the given key
+void freeHashMap(HashMap* map); //frees all memory allocated by the hash map (but not the Document* unless managed)
 
-// Function to insert or update a key-value pair in the hashmap
-void put(HashMap* map, char* key, int value);
-
-// Function to retrieve the value associated with a key
-// Sets *found = 1 if key is found, *found = 0 otherwise
-int get(HashMap* map, char* key, int* found);
-
-// Function to free all memory used by the hashmap
-void free_hashmap(HashMap* map);
-
-#endif  // End of include guard
+#endif

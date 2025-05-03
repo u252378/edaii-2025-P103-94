@@ -1,73 +1,74 @@
-#include <stdlib.h>       // For malloc, free
-#include <string.h>       // For strcmp, strdup
-#include "hashmap.h"      // Include the corresponding header file
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "hashmap.h" 
 
-// Hash function to compute an index for a given key
-unsigned int hash(char* key) {
-    unsigned int hash = 0;              // Start with a hash value of 0
-    while (*key) {                      // Loop through each character in the key string
-        hash = (hash * 31) + *key++;    // Multiply hash by 31 and add the ASCII value of the character
+//hash function for strings:
+unsigned int hash(const char* key, int size) {
+    unsigned int hashValue = 0;
+    for (int i = 0; key[i] != '\0'; i++) {  //loops through each character of the string
+        hashValue = hashValue * 31 + key[i]; //common practice: multiply by a prime and add the char
     }
-    return hash % TABLE_SIZE;           // Ensure the hash fits within the table bounds
+    return hashValue % size; //return index within the table size
 }
 
-// Create and initialize a new hashmap
-HashMap* create_hashmap() {
-    HashMap* map = malloc(sizeof(HashMap));  // Allocate memory for the hashmap
-    for (int i = 0; i < TABLE_SIZE; i++) {
-        map->table[i] = NULL;                // Initialize each bucket to NULL
-    }
-    return map;                              // Return the initialized map
+//creates a new hash map with a specified number of buckets:
+HashMap* createHashMap(int size) {
+    HashMap* map = malloc(sizeof(HashMap)); //we need to allocate memory for the HashMap
+    map->size = size; //now, set the number of buckets
+    map->buckets = calloc(size, sizeof(HashNode*)); //allocate memory and initialize all buckets to NULL
+    return map; //finally, return the new hash map
 }
 
-// Insert or update a key-value pair into the hashmap
-void put(HashMap* map, char* key, int value) {
-    unsigned int index = hash(key);          // Compute hash index for the key
-    Entry* current = map->table[index];      // Get the head of the linked list at that index
+//inserts a key-value pair into the hash map:
+void insertToHashMap(HashMap* map, const char* key, Document* value) {
+    unsigned int index = hash(key, map->size); //compute hash index
+    HashNode* node = map->buckets[index]; //get the head of the bucket chain
 
-    while (current != NULL) {                // Traverse the list to see if key already exists
-        if (strcmp(current->key, key) == 0) {  // If key found, update value
-            current->value = value;
+    //this will check if key already exists in the chain:
+    while (node != NULL) {
+        if (strcmp(node->key, key) == 0) { //if key matches, update the value
+            node->value = value; //overwrite the value (doesn't duplicate Document)
             return;
         }
-        current = current->next;             // Move to next node
+        node = node->next; //move to the next node in the chain
     }
 
-    // If key was not found, insert a new entry at the head of the list
-    Entry* new_entry = malloc(sizeof(Entry));     // Allocate memory for new entry
-    new_entry->key = strdup(key);                // Duplicate the key string
-    new_entry->value = value;                    // Set the value
-    new_entry->next = map->table[index];         // Point to previous head of the list
-    map->table[index] = new_entry;               // Update head to new entry
+    //in case key is not found, create a new node and insert at the beginning of the list:
+    HashNode* newNode = malloc(sizeof(HashNode)); //allocate memory for new node
+    newNode->key = strdup(key); //duplicate the key string (allocates new memory)
+    newNode->value = value; //assign the Document* as value
+    newNode->next = map->buckets[index]; //point new node to current head
+    map->buckets[index] = newNode; //make new node the head of the chain
 }
 
-// Retrieve the value associated with a key from the hashmap
-int get(HashMap* map, char* key, int* found) {
-    unsigned int index = hash(key);           // Compute index for the key
-    Entry* current = map->table[index];       // Get head of the list at index
+//retrieves the value (Document*) associated with a given key:
+Document* getFromHashMap(HashMap* map, const char* key) {
+    unsigned int index = hash(key, map->size); //compute hash index
+    HashNode* node = map->buckets[index]; //get head of the chain
 
-    while (current != NULL) {                 // Traverse the linked list
-        if (strcmp(current->key, key) == 0) { // If key matches
-            *found = 1;                       // Mark as found
-            return current->value;            // Return the value
+    while (node != NULL) {
+        if (strcmp(node->key, key) == 0) { //if key matches, return its value
+            return node->value;
         }
-        current = current->next;              // Move to next node
+        node = node->next; //move to next node
     }
 
-    *found = 0;                               // Key not found
-    return 0;                                 // Return default value
+    return NULL; //return NULL if key is not found
 }
 
-// Free all memory used by the hashmap
-void free_hashmap(HashMap* map) {
-    for (int i = 0; i < TABLE_SIZE; i++) {        // Iterate over all buckets
-        Entry* current = map->table[i];           // Get head of the list at current index
-        while (current != NULL) {                 // Traverse the list
-            Entry* temp = current;                // Save current node
-            current = current->next;              // Move to next node
-            free(temp->key);                      // Free the duplicated key string
-            free(temp);                           // Free the node itself
+//free memory:
+void freeHashMap(HashMap* map) {
+    for (int i = 0; i < map->size; i++) { //loop through all buckets
+        HashNode* node = map->buckets[i]; //get the head of the chain
+        while (node != NULL) {
+            HashNode* temp = node; //store current node
+            node = node->next; //move to next before freeing
+
+            free(temp->key); //free the duplicated key string
+            free(temp); //free the node (does not free Document*)
         }
     }
-    free(map);                                    // Finally, free the map structure
+    free(map->buckets); //free the array of buckets
+    free(map); //free the map structure itself
 }
