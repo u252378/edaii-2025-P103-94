@@ -2,9 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 #include "query.h"
-
 
 // This function is to create an empty query linked list
 QueryList* create_query_list() {
@@ -23,10 +21,6 @@ QueryList* create_query_list() {
 
   return query_list;
 }
-
-
-
-
 
 // This function is to free the query list
 void free_query_list(QueryList *query_list) {
@@ -55,12 +49,8 @@ void free_query_list(QueryList *query_list) {
   free(query_list);
 }
 
-
-
-
-
 // This function is to add another element inserted by the user to the linked list
-void add_keyword(QueryList *query_list, const char *keyword) {
+void add_keyword(QueryList *query_list, const char *keyword, QueryType type) {
 
   // allocate memory for the new query node
   QueryNode *new_node = malloc(sizeof(QueryNode));
@@ -87,6 +77,8 @@ void add_keyword(QueryList *query_list, const char *keyword) {
   // when allocated memory for keyword, then copy keyword string into allocated memory
   strcpy(new_node -> keyword, keyword);
 
+  new_node -> type = type; //cambiar!!!!!!!!!!
+
   // pointer of new node set to null since it is last element in list
   new_node -> next = NULL;
 
@@ -105,80 +97,48 @@ void add_keyword(QueryList *query_list, const char *keyword) {
   }
 }
 
+QueryList* parse_query(const char *input) {
+  QueryList *list = create_query_list();
+  if (!list) return NULL;
 
+  char buffer[256];
+  int idx = 0;
 
+  for (int i = 0; ; i++) {
+      char ch = input[i];
 
+      if (ch == ' ' || ch == '\0') {
+          if (idx > 0) {
+              buffer[idx] = '\0';
 
+              QueryType type = INCLUDE;
+              if (buffer[0] == '!') {
+                  type = EXCLUDE;
+                  memmove(buffer, buffer + 1, strlen(buffer)); // remove '!'
+              } else if (strchr(buffer, '|')) {
+                  type = OR;
+              }
 
+              add_keyword(list, buffer, type);
+              idx = 0;
+          }
+          if (ch == '\0') break;
+      } else {
+          buffer[idx++] = ch;
+      }
+  }
 
-
-
-
-Query* create_query_node(const char* word, QueryType type) {
-    Query* q = malloc(sizeof(Query));
-    q->word = strdup(word);
-    q->type = type;
-    q->next = NULL;
-    return q;
+  return list;
 }
 
-Query* parse_query(const char* input) {
-    Query *head = NULL, *tail = NULL;
-    char buffer[256];
-    int idx = 0;
-
-    for (int i = 0; ; i++) {
-        char ch = input[i];
-
-        if (ch == ' ' || ch == '\0') {
-            if (idx > 0) {
-                buffer[idx] = '\0';
-
-                QueryType type = INCLUDE;
-                if (buffer[0] == '!') {
-                    type = EXCLUDE;
-                    memmove(buffer, buffer + 1, strlen(buffer)); // Remove '!'
-                } else if (strchr(buffer, '|')) {
-                    type = OR;
-                }
-
-                Query* node = create_query_node(buffer, type);
-                if (!head) head = tail = node;
-                else {
-                    tail->next = node;
-                    tail = node;
-                }
-                idx = 0;
-            }
-
-            if (ch == '\0') break;
-        } else {
-            buffer[idx++] = ch;
-        }
-    }
-
-    return head;
+void print_query_list(const QueryList* list) {
+  QueryNode *current = list -> head;
+  while (current) {
+      printf("[%s | %d] -> ", current->keyword, current->type); //hay que mirar lo de type
+      current = current->next;
+  }
+  printf("NULL\n");
 }
-
-void free_query(Query* head) {
-    while (head) {
-        Query* next = head->next;
-        free(head->word);
-        free(head);
-        head = next;
-    }
-}
-
-void print_query(const Query* head) {
-    while (head) {
-        printf("[%s | %d] -> ", head->word, head->type);
-        head = head->next;
-    }
-    printf("NULL\n");
-}
-
-
-
 
 // This is a function to initilaise the queue of queries
 void init_queue_query(QueueQueries *queue) {

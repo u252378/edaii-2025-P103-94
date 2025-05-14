@@ -135,7 +135,7 @@ Document* load_documents_from_folder(const char* folder_path) {
             }
         }
     }
-
+}
     closedir(dir);
     return head;
 }
