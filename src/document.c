@@ -73,7 +73,7 @@ Document *document_desserialize(char *path) {
                 int linkId = atoi(linkBuffer); //converts to int
 
                 //add to links:
-                Link* newLink = createLink(linkId);
+                Link* newLink = create_link(linkId);
                 if (!newLink) { //in case creation failed, it will clean up and exit
                     fclose(file);
                     free(doc->title);
