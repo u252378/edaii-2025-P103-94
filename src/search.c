@@ -47,3 +47,4 @@ int main(int argc, char** argv) {
 
     free_documents(docs); //we free the memory
     return 0;
+}
