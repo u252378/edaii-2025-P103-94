@@ -120,5 +120,62 @@ void reverseIndexDocument(ReverseIndex *index, Document *document) { // tokenize
     }
 
     free(text); // free the copied text
-}
 
+void reverseIndexSaveToFile(ReverseIndex *index, const char *filename) {// save the word index to a text file
+    FILE *file = fopen(filename, "w");// open the file
+    if (!file) {
+        printf("Couldn't open %s for writing\n", filename);
+        return;
+    }
+
+    for (int i = 0; i < index->slotsCount; i++) {// loop through each slot in the index
+        ReverseIndexSlot *slot = index->slots[i];
+        if (!slot) continue; // skip empty slots
+        ReverseIndexKey *key = slot->keys;     //for each word in this slot
+        while (key) { // write the word followed by colon 
+            fprintf(file, "%s:", key->word);
+            DocumentsList *doc = key->values;   // write all documents that contain this word
+            while (doc) {
+                if (doc->doc && doc->doc->title) {
+                    fprintf(file, "%s,", doc->doc->title);  // write document title followed by comma 
+                }
+                doc = doc->next;
+            }
+            fprintf(file, "\n"); // end this word's line
+            key = key->next; // go to the next word
+        }
+    }
+    fclose(file); // close the file
+}
+void reverseIndexLoadFromFile(ReverseIndex *index, const char *filename, 
+                            Document* (*getDocByTitle)(const char*)) { // load the word index from a text file
+    FILE *file = fopen(filename, "r");  // open the file
+    if (!file) {
+        printf("Couldn't open %s for reading\n", filename);
+        return;
+    }
+// read file line by line
+    char line[1000]; // buffer to hold each line
+    while (fgets(line, sizeof(line), file) {
+        line[strcspn(line, "\n")] = '\0';    // remove the newline at the end
+        char *colon = strchr(line, ':');     // split line into word and documents parts
+        if (!colon) continue; // skip bad lines
+        *colon = '\0'; // split the string in two
+        char *word = line;       // part before colon 
+        char *documents = colon + 1; // part after colon
+        char *docTitle = strtok(documents, ",");  // split documents by commas
+        while (docTitle) { // find the document with this title
+            Document *doc = getDocByTitle(docTitle);
+            if (doc) {    
+                DocumentsList *list = malloc(sizeof(DocumentsList)); // create a new list entry
+                list->doc = doc;
+                list->next = NULL;
+                reverseIndexPut(index, word, list);// add to index
+            }
+            docTitle = strtok(NULL, ",");  // get next document title
+        }
+    }
+
+    fclose(file); //close the file
+}
+}
