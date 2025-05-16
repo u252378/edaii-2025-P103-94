@@ -113,10 +113,12 @@ QueryList* parse_query(const char *input) {
 
               QueryType type = INCLUDE;
               if (buffer[0] == '!') {
-                  type = EXCLUDE;
-                  memmove(buffer, buffer + 1, strlen(buffer)); // remove '!'
-              } else if (strchr(buffer, '|')) {
                   type = OR;
+                  memmove(buffer, buffer + 1, strlen(buffer)); // remove '!'
+              } 
+              else if (buffer[0] == '-') { //TO HANDLE EXCLUDED KEYWORDS (** Allow excluding keywords)
+                    type = EXCLUDE;
+                    memmove(buffer, buffer + 1, strlen(buffer)); // Remove '-'
               }
 
               add_keyword(list, buffer, type);
