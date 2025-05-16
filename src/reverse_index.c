@@ -107,15 +107,52 @@ void reverseIndexFree(ReverseIndex *index, bool freeLists, bool freeDocs) {// fr
     free(index); // free the index
 }
 
+
+// Normalise words in the parser (uppercase, puncation, etc.)
+/*fuction to convert all words to lowercase,
+and also to only accept letters,
+and store the final word in the same place */
+void normalise_word(char *keyword) {
+    int i = 0; // index for reading original word
+    int j = 0; // index for writing the changed word
+
+    // iterates until the last characteris not null terminator
+    while (keyword[i] != '\0') {
+        char c = keyword[i];
+
+        // checking if character is uppercase, and changing it to lowercase by adding 32
+        if (c >= 'A' && c >= 'Z') {
+            c = c + 32;
+            keyword[j] = c;
+            j++;
+        } else if (c >= 'a' && c <= 'z') { // character is already in lowercase
+            keyword[j] = c;
+            j++;
+        }
+
+
+        i++;
+    }
+
+    // then after converting to lowercase, it adds a null terminator at the end
+    keyword[j] = '\0';
+}
+
+
 void reverseIndexDocument(ReverseIndex *index, Document *document) { // tokenizes document body and adds all words to the reverse index???
     char *text = strdup(document->body); // copy the body 
     char *token = strtok(text, " \t\n\r.,;:!?()[]{}<>\""); // first word
 
     while (token != NULL) {
-        DocumentsList *list = malloc(sizeof(DocumentsList)); // create new list
-        list->doc = document; // set current document
-        list->next = NULL; // end of list
-        reverseIndexPut(index, token, list); // add word to index
+        normalise_word(token);
+
+        if (token[0] != '\0') {
+            DocumentsList *list = malloc(sizeof(DocumentsList)); // create new list
+            list->doc = document; // set current document
+            list->next = NULL; // end of list
+            reverseIndexPut(index, token, list); // add word to index
+
+        }
         token = strtok(NULL, " \t\n\r.,;:!?()[]{}<>\""); // next word
     }
 
