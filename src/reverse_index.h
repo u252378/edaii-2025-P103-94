@@ -26,5 +26,7 @@ DocumentsList *reverseIndexGet(ReverseIndex *index, char *word);// get the list 
 
 void reverseIndexFree(ReverseIndex *index, bool freeLists, bool freeDocs);
 void reverseIndexDocument(ReverseIndex *index, Document *document); // tokenize a document and add all its words to the index
+void reverseIndexSaveToFile(ReverseIndex *index, const char *filename); // saves the reverse index to a file 
+void reverseIndexLoadFromFile(ReverseIndex *index, const char *filename, Document* (*getDocByTitle)(const char*)); // loads a reverse index from a file into an existing index
 
 #endif 
