@@ -1,0 +1,54 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "document.h"
+
+//we need a helper function that creates a single test document with a custom body: 
+Document* create_mock_document(const char* body) {
+    Document* doc = malloc(sizeof(Document));
+    doc->doc_id = 1;
+    doc->title = strdup("Test Document");
+    doc->body = strdup(body);
+    doc->links = NULL;
+    doc->next = NULL;
+    return doc;
+}
+
+/*
+Tests the linear search functionality by:
+1. Creating a document with known content
+2. Checking if it contains specific keywords
+3. Verifying the search works as expected
+ */
+void test_linear_search() {
+    printf("Running the test for linear search...\n");
+
+    //first, we will create a test document with a body that contains keywords: "cats" and "dogs":
+    Document* doc = create_mock_document("This is a test string about cats and dogs."); 
+
+    //define keywords to search for (both should be in the document):
+    const char* keywords[] = {"cats", "dogs"};
+    int num_keywords = 2;
+
+    //check if keywords exist in the document (linear search logic):
+    int matches_all = 1; //we start by assuming they all matched 
+    for (int i = 0; i < num_keywords; i++) {
+        if (!contains_substring(doc->body, keywords[i])) {
+            matches_all = 0; //if any keyword is missing, we will mark as failed 
+            break;
+        }
+    }
+
+    if (!matches_all) { //finally, we will report test results 
+        printf("FAILED: Document should match both 'cats' and 'dogs'.\n");
+    } else {
+        printf("PASSED\n"); //if all keywords were found print PASSED
+    }
+
+    free_documents(doc); //lastly, free the mock document to prevent memory leaks
+}
+
+int main() {
+    test_linear_search(); //execute the test (call the function)
+    return 0; //return success status
+}

@@ -28,6 +28,18 @@ typedef struct {
     struct Document* next; //for the document linked list
 } Document;
 
+
+typedef struct document_list_node{
+    Document *document;
+    struct docuemnt_list_node *next;
+} DocumentsListNode;
+
+typedef struct documents_list{
+    int number_documents;
+    DocumentsListNode *head;
+    DocumentsListNode *tail;
+} DocumentsList;
+
 //FUNCTION DECLARATIONS:
 Document* document_desserialize(char* path);
 Document* load_documents_from_folder(const char* folder_path);

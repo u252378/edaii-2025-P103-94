@@ -5,13 +5,11 @@
 
 # Authors
 
-sdjfhskjdfhk
-
 Group number: (todo, add the group number here)
 
-- (todo, add the email of the first group member)
-- (todo, add the email of the second group member)
-- (todo, add the email of the third group member)
+- anna.vargas01@estudiant.upf.edu
+- javier.reinoso01@estudiant.upf.edu
+- elena.sandin@estudiant.upf.edu
 
 # Plagiarism Disclaimer
 - You **MUST NOT** look at anyone else's solutions, including previous year students and external tutors.
