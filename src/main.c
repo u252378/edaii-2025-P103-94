@@ -3,6 +3,7 @@
 #include "document.h"
 #include "query.h"
 #include "reverse_index.h"
+#include "sort_search.h"
 int main(int argc, char** argv) {
     //we check if the user provided the dataset folder path as a command-line argument:
     if (argc < 2) {
@@ -11,7 +12,7 @@ int main(int argc, char** argv) {
         return 1; //EXIT wih error.
     }
 
-    //now, this loada all documents from the specified folder path:
+    //now, this loads all documents from the specified folder path:
     Document* docs = load_documents_from_folder(argv[1]);
     ReverseIndex index = build_reverse_index(docs);
   
@@ -29,7 +30,8 @@ int main(int argc, char** argv) {
         print_document_details(current); //this will print the details of the current document (ID, title, body, and links)
         current = current->next; //to move to the next document in the linked list,
     }
-
-    free_documents(docs); //when finished, we have to free all the memory allocated for the document list.
-    return 0;
+   docs = sort_documents_by_relevance(docs); // sorts the documents
+   print_sorted_documents(docs);             // prints sorted documents
+   free_documents(docs); //when finished, we have to free all the memory allocated for the document list.
+   return 0;
 }
