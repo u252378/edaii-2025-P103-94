@@ -17,11 +17,6 @@ typedef struct Link {
     struct Link* next;
 } Link;
 
-typedef struct document_list_node {
-    Document *doc;
-    struct document_list_node *next;
-} DocumentsListNode;
-
   
 //DOCUMENT STRUCT:
 typedef struct Document{
