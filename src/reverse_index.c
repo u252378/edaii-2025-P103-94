@@ -2,12 +2,12 @@
 #include <string.h>
 #include <stdbool.h>
 #include "reverse_index.h" 
-
+#include "document.h"
 
 ReverseIndex *reverseIndexInit(int slots) { // function to create the reverse index (the hash table)
     ReverseIndex *index = malloc(sizeof(ReverseIndex)); // allocate memory for the index
     index->slotsCount = slots; // save number of slots
-    index->keys = 0; // start with 0 keys
+    index->unique_keywords = 0; // start with 0 keys
     index->slots = calloc(slots, sizeof(ReverseIndexSlot*)); // allocate and zero out the slots
     return index; // return the new index
 }
