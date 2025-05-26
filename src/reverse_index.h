@@ -21,7 +21,7 @@ typedef struct reverseIndex {
 } ReverseIndex;
 
 ReverseIndex *reverseIndexInit(int slots); // create and initialize the reverse index 
-void reverseIndexPut(ReverseIndex *index, char *word, DocumentsList *list); // add a word and its associated document list to the index
+void reverseIndexPut(ReverseIndex *index, char *word, DocumentsListNode *node); // add a word and its associated document list to the index
 
 DocumentsList *reverseIndexGet(ReverseIndex *index, char *word);// get the list of documents that contain the given word
 
@@ -30,5 +30,7 @@ void normalise_word(char* word);
 void reverseIndexDocument(ReverseIndex *index, Document *document); // tokenize a document and add all its words to the index
 void reverseIndexSaveToFile(ReverseIndex *index, const char *filename); // saves the reverse index to a file 
 void reverseIndexLoadFromFile(ReverseIndex *index, const char *filename, Document* (*getDocByTitle)(const char*)); // loads a reverse index from a file into an existing index
-
+void build_reverse_index(ReverseIndex *index, Document *docs);
+void print_reverse_index(ReverseIndex *index);
+void free_reverse_index(ReverseIndex *index);
 #endif 
