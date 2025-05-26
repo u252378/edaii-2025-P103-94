@@ -38,7 +38,13 @@ Document* sorted_merge(Document* a, Document* b) {
 
     return result;
 }
+void sort_documents_by_relevance(Document *docs) {//sorting
+    
+}
 
+void print_sorted_documents(Document *docs) {//print sorted docuemnts
+   
+}
 // this function sorts the linked list using merge sort algorithm (because It has O(n log n) time complexity in all cases), it sorts documents in descending order by relevance score
 void sort_by_relevance(Document** headRef) {
     Document* head = *headRef;
