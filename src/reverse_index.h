@@ -2,10 +2,6 @@
 #define REVERSE_INDEX_H
 #include "document.h"  
 
-typedef struct document_list_node {
-    Document *doc;
-    struct document_list_node *next;
-} DocumentsListNode;
 
 typedef DocumentsListNode DocumentsList;
 
