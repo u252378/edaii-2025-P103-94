@@ -40,8 +40,8 @@ void reverseIndexPut(ReverseIndex *index, char *word, DocumentsList *list) {// f
             // add document list to existing word
         DocumentsList *docList = key->values;
 if (!docList->head) {
-    docList->head = list;
-    docList->tail = list;
+    docList->head = node;
+    docList->tail = node;
 } else {
     docList->tail->next = list;
     docList->tail = list;
