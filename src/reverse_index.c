@@ -100,7 +100,7 @@ void reverseIndexFree(ReverseIndex *index, bool freeLists, bool freeDocs) {// fr
                     DocumentsListNode *docList = key->values->head;
                     while (docList) {
                         DocumentsListNode *nextDoc = docList->next;
-                        if (freeDocs && DocumentList->doc) {
+                        if (freeDocs && DocumentsList->doc) {
                             // free document if requested
                             free(docList->document->title);
                             free(docList->document->body);
@@ -185,7 +185,7 @@ void reverseIndexSaveToFile(ReverseIndex *index, const char *filename) {// save 
             fprintf(file, "%s:", key->word);
             DocumentsListNode *doc = key->values;   // write all documents that contain this word
             while (doc) {
-                if (document->document && document->document->title) {
+                if (Document->document && document->document->title) {
                     fprintf(file, "%s,", document->document->title);  // write document title followed by comma 
                 }
                 doc = doc->next;
