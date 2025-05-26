@@ -38,9 +38,9 @@ void reverseIndexPut(ReverseIndex *index, char *word, DocumentsList *list) {// f
     while (key) {
         if (strcmp(key->word, word) == 0) { // if word already exists
             // add document list to existing word
-            DocumentsList *curr = key->values;
-            while (curr->next) curr = curr->next; // go to the end of the list
-            curr->next = list; // add new documents to the end
+            DocumentsListNode *curr = key->values;
+                while (curr->next) curr = curr->next; // go to the end of the list
+                curr->next = list; // add new documents to the end
             return;
         }
         key = key->next; // try next key 
@@ -84,7 +84,7 @@ void reverseIndexFree(ReverseIndex *index, bool freeLists, bool freeDocs) {// fr
                 free(key->word); // free the word
 
                 if (freeLists) {
-                    DocumentsList *docList = key->values;
+                    DocumentsListNode *docList = key->values;
                     while (docList) {
                         DocumentsList *nextDoc = docList->next;
                         if (freeDocs && docList->doc) {
@@ -145,7 +145,7 @@ void reverseIndexDocument(ReverseIndex *index, Document *document) { // tokenize
         normalise_word(token);
 
         if (token[0] != '\0') {
-            DocumentsList *list = malloc(sizeof(DocumentsList)); // create new list
+            DocumentsListNode *list = malloc(sizeof(DocumentsList)); // create new list
             list->doc = document; // set current document
             list->next = NULL; // end of list
             reverseIndexPut(index, token, list); // add word to index
@@ -169,7 +169,7 @@ void reverseIndexSaveToFile(ReverseIndex *index, const char *filename) {// save 
         ReverseIndexKey *key = slot->keys;     //for each word in this slot
         while (key) { // write the word followed by colon 
             fprintf(file, "%s:", key->word);
-            DocumentsList *doc = key->values;   // write all documents that contain this word
+            DocumentsListNode *doc = key->values;   // write all documents that contain this word
             while (doc) {
                 if (doc->doc && doc->doc->title) {
                     fprintf(file, "%s,", doc->doc->title);  // write document title followed by comma 
@@ -182,6 +182,7 @@ void reverseIndexSaveToFile(ReverseIndex *index, const char *filename) {// save 
     }
     fclose(file); // close the file
 }
+
 void reverseIndexLoadFromFile(ReverseIndex *index, const char *filename, 
                             Document* (*getDocByTitle)(const char*)) { // load the word index from a text file
     FILE *file = fopen(filename, "r");  // open the file
@@ -191,7 +192,7 @@ void reverseIndexLoadFromFile(ReverseIndex *index, const char *filename,
     }
 // read file line by line
     char line[1000]; // buffer to hold each line
-    while (fgets(line, sizeof(line), file) {
+    while (fgets(line, sizeof(line), file)) {
         line[strcspn(line, "\n")] = '\0';    // remove the newline at the end
         char *colon = strchr(line, ':');     // split line into word and documents parts
         if (!colon) continue; // skip bad lines
