@@ -22,6 +22,7 @@ typedef struct reverseIndex {
 
 ReverseIndex *reverseIndexInit(int slots); // create and initialize the reverse index 
 void reverseIndexPut(ReverseIndex *index, char *word, DocumentsListNode *node); // add a word and its associated document list to the index
+void free_reverse_index(ReverseIndex *index);
 
 DocumentsList *reverseIndexGet(ReverseIndex *index, char *word);// get the list of documents that contain the given word
 
