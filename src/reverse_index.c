@@ -86,7 +86,7 @@ void reverseIndexFree(ReverseIndex *index, bool freeLists, bool freeDocs) {// fr
                 if (freeLists) {
                     DocumentsListNode *docList = key->values;
                     while (docList) {
-                        DocumentsList *nextDoc = docList->next;
+                        DocumentsListNode *nextDoc = docList->next;
                         if (freeDocs && docList->doc) {
                             // free document if requested
                             free(docList->doc->title);
@@ -155,6 +155,7 @@ void reverseIndexDocument(ReverseIndex *index, Document *document) { // tokenize
     }
 
     free(text); // free the copied text
+}
 
 void reverseIndexSaveToFile(ReverseIndex *index, const char *filename) {// save the word index to a text file
     FILE *file = fopen(filename, "w");// open the file
@@ -203,7 +204,7 @@ void reverseIndexLoadFromFile(ReverseIndex *index, const char *filename,
         while (docTitle) { // find the document with this title
             Document *doc = getDocByTitle(docTitle);
             if (doc) {    
-                DocumentsList *list = malloc(sizeof(DocumentsList)); // create a new list entry
+                DocumentsListNode *list = malloc(sizeof(DocumentsList)); // create a new list entry
                 list->doc = doc;
                 list->next = NULL;
                 reverseIndexPut(index, word, list);// add to index
@@ -213,5 +214,4 @@ void reverseIndexLoadFromFile(ReverseIndex *index, const char *filename,
     }
 
     fclose(file); //close the file
-}
 }
