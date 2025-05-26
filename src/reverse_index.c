@@ -97,14 +97,14 @@ void reverseIndexFree(ReverseIndex *index, bool freeLists, bool freeDocs) {// fr
                 free(key->word); // free the word
 
                 if (freeLists) {
-                    DocumentsListNode *docList = key->values;
+                    DocumentsListNode *docList = key->values->head;
                     while (docList) {
                         DocumentsListNode *nextDoc = docList->next;
-                        if (freeDocs && docList->doc) {
+                        if (freeDocs && documentList->doc) {
                             // free document if requested
-                            free(docList->doc->title);
-                            free(docList->doc->body);
-                            free(docList->doc);
+                            free(docList->document->title);
+                            free(docList->document->body);
+                            free(docList->document);
                         }
                         free(docList); // free the list node
                         docList = nextDoc;
