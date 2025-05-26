@@ -207,4 +207,31 @@ void print_matrix(Graph * graph) {
     }
 }
 
+//Get indegree of a document in the graph and print it as the relevance score: 
+//function to get indegree (relevance score) of a document at vertex index j
+int get_indegree(Graph* graph, int j) {
+    int indegree = 0;
 
+    if (j < 0 || j >= graph->num_vertices) {
+        return -1; //invalid vertex index
+    }
+
+    for (int i = 0; i < graph->num_vertices; i++) {
+        if (graph->adjacency_matrix[i][j] != 0.0) {
+            indegree++;
+        }
+    }
+
+    return indegree;
+}
+
+//function to print all at once:
+void print_relevance_scores(Graph* graph) { 
+    printf("Relevance scores (indegree) of each document:\n");
+    for (int j = 0; j < graph->num_vertices; j++) {
+        if (graph->documents[j] != NULL) {
+            int indegree = get_indegree(graph, j);
+            printf("Document ID %d has relevance score: %d\n", graph->documents[j]->doc_id, indegree);
+        }
+    }
+}
