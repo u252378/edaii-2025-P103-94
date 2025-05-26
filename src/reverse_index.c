@@ -23,7 +23,8 @@ static int hash(char *word, int slotsCount) { // function to hash a word into a 
 }
 
 
-void reverseIndexPut(ReverseIndex *index, char *word, DocumentsList *list) {// function to add a word and the associated document list to the index
+void reverseIndexPut(ReverseIndex *index, char *word, DocumentsListNode *node)
+ {// function to add a word and the associated document list to the index
     int slot = hash(word, index->slotsCount); // get index from hash function
     ReverseIndexSlot *slotPtr = index->slots[slot]; // access the correct slot
 
@@ -43,8 +44,8 @@ if (!docList->head) {
     docList->head = node;
     docList->tail = node;
 } else {
-    docList->tail->next = list;
-    docList->tail = list;
+    docList->tail->next = node;
+    docList->tail = node;
 }
 docList->number_documents++;
 
@@ -56,7 +57,12 @@ docList->number_documents++;
     // word not found, create new key entry
     ReverseIndexKey *newKey = malloc(sizeof(ReverseIndexKey)); // new key
     newKey->word = strdup(word); // copy the word
-    newKey->values = list; // set its documents list
+    DocumentsList *newList = malloc(sizeof(DocumentsList));
+    newList->head = node;
+    newList->tail = node;
+     newList->number_documents = 1;
+    node->next = NULL;
+    newKey->values = newList;
     newKey->next = slotPtr->keys; // insert at beginning of list
     slotPtr->keys = newKey; // update head of key list
     slotPtr->keysCount++; // increase number of keys in this slot
@@ -211,10 +217,14 @@ void reverseIndexLoadFromFile(ReverseIndex *index, const char *filename,
         while (docTitle) { // find the document with this title
             Document *doc = getDocByTitle(docTitle);
             if (doc) {    
-                DocumentsListNode *list = malloc(sizeof(DocumentsListNode)); // create a new list entry
-                list->doc = doc;
-                list->next = NULL;
-                reverseIndexPut(index, word, list);// add to index
+                DocumentsListNode *node = malloc(sizeof(DocumentsListNode));
+                node->document = document;
+                node->next = NULL;
+                DocumentsList *list = malloc(sizeof(DocumentsList));
+                list->number_documents = 1;
+                list->head = node;
+                list->tail = node;
+                reverseIndexPut(index, token, list); // add to index
             }
             docTitle = strtok(NULL, ",");  // get next document title
         }
