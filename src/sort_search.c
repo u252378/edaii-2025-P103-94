@@ -44,10 +44,10 @@ Document* sort_documents_by_relevance(Document *docs) {//sorting
     return docs;   
 }
 
-void print_sorted_documents(Document *docs) {//print sorted docuemnts
+void print_sorted_documents(const Document *docs) {//print sorted docuemnts
       while (docs) {
         printf("Title: %s\n", docs->title);
-        printf("Relevance: %.2f\n" docs->relevance);
+        printf("Relevance: %.2f\n" ,docs->relevance);
         docs = docs->next;
     }
 }
