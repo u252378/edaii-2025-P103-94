@@ -1,4 +1,4 @@
-# include "document.h"
+# include "../src/document.h"
 # include <stdio.h>
 # include <stdlib.h>
 # include <string.h>
@@ -38,27 +38,25 @@ int test2() {
     doc -> doc_id = 4;
     doc -> next = NULL;    
 
-    int passed = 1;
     if (number_documents_list(doc) != 1) {
         printf("Test 2 failed\n");
-        passed = 0;
+        return 0;
     }
     if (doc -> doc_id != 4) {
         printf("Test 2 failed\n");
-        passed = 0;
+        return 0;
     }
     if (doc -> next != NULL) {
         printf("Test 2 failed\n");
-        passed = 0;
+        return 0;
     }
-    if (passed) {
-        printf("Test 2 passed\n");
-    }
+    
 
     // freeing the allocated memory for first element of the linked list
     free(doc);
 
-    return passed;    
+    printf("Test 2 passed\n");
+    return 1;    
 }
 
 // Test 3 (two documents in document linked list)
@@ -73,36 +71,35 @@ int test3() {
     doc1 -> next = doc2;
     doc2 -> next = NULL;
 
-    int passed = 1;
     if (number_documents_list(doc1) != 2) {
         printf("Test 3 failed\n");
-        passed = 0;
+        return 0;
     }
     if (doc1 -> doc_id != 1) {
         printf("Test 3 failed\n");
-        passed = 0;
+        return 0;
     }
     if (doc2 -> doc_id != 2) {
         printf("Test 3 failed\n");
-        passed = 0;
+        return 0;
     }
     if (doc1 -> next != doc2) {
         printf("Test 3 failed\n");
-        passed = 0;
+        return 0;
     }
     if(doc2 -> next != NULL) {
         printf("Test 3 failed\n");
-        passed = 0;
+        return 0;
     }
-    if (passed) {
-        printf("Test 3 passed\n");
-    }
+    
+    
 
     // freeing the memory allocated for the two elements of linked list
     free(doc1);
     free(doc2);
 
-    return passed;
+    printf("Test 3 passed\n");
+    return 1;
 }
 
 int main() {
