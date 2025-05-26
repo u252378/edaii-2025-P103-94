@@ -2,9 +2,6 @@
 #define REVERSE_INDEX_H
 #include "document.h"  
 
-
-typedef DocumentsListNode DocumentsList;
-
 typedef struct reverseIndexKey { // this struct represents a keyword 
     char *word; // the actual keyword 
     DocumentsList *values; // linked list of documents that contain this word
