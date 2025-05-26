@@ -186,7 +186,7 @@ void reverseIndexSaveToFile(ReverseIndex *index, const char *filename) {// save 
             DocumentsListNode *doc = key->values->head;// write all documents that contain this word
             while (doc) {
                 if (doc->document && doc->document->title) {
-                    fprintf(file, "%s,", Document->document->title);  // write document title followed by comma 
+                    fprintf(file, "%s,", doc->document->title);  // write document title followed by comma 
                 }
                 doc = doc->next;
             }
@@ -218,13 +218,13 @@ void reverseIndexLoadFromFile(ReverseIndex *index, const char *filename,
             Document *doc = getDocByTitle(docTitle);
             if (doc) {    
                 DocumentsListNode *node = malloc(sizeof(DocumentsListNode));
-                node->document = Document;
+                node->document = document;
                 node->next = NULL;
                 DocumentsList *list = malloc(sizeof(DocumentsList));
-                list->number_documents = 1;
-                list->head = node;
-                list->tail = node;
-                reverseIndexPut(index, token, list); // add to index
+                docList->number_documents = 1;
+                docList->head = node;
+                docList->tail = node;
+                reverseIndexPut(index, token, docList); // add to index
             }
             docTitle = strtok(NULL, ",");  // get next document title
         }
