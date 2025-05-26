@@ -29,12 +29,12 @@ typedef struct Document{
 } Document;
 
 
-typedef struct document_list_node{
+typedef struct DocumentsListNode{
     Document *document;
     struct document_list_node *next;
 } DocumentsListNode;
 
-typedef struct documents_list{
+typedef struct DocumentsList{
     int number_documents;
     DocumentsListNode *head;
     DocumentsListNode *tail;
