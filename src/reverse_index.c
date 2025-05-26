@@ -53,7 +53,7 @@ void reverseIndexPut(ReverseIndex *index, char *word, DocumentsList *list) {// f
     newKey->next = slotPtr->keys; // insert at beginning of list
     slotPtr->keys = newKey; // update head of key list
     slotPtr->keysCount++; // increase number of keys in this slot
-    index->keys++; // increase total keys in index
+    index->unique_keywords++; // increase total keys in index
 }
 
 
