@@ -8,7 +8,7 @@ int contains_substring(const char* text, const char* keyword) { //function to se
     return strstr(text, keyword) != NULL; //found
 }
 
-int main(int argc, char** argv) {
+int main2(int argc, char** argv) {
     if (argc < 3) { //we check if the user has introduced at least two arguments
         printf("Not enough arguments");
         return 1; //error
