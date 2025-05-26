@@ -38,9 +38,16 @@ void reverseIndexPut(ReverseIndex *index, char *word, DocumentsList *list) {// f
     while (key) {
         if (strcmp(key->word, word) == 0) { // if word already exists
             // add document list to existing word
-            DocumentsListNode *curr = key->values;
-                while (curr->next) curr = curr->next; // go to the end of the list
-                curr->next = list; // add new documents to the end
+        DocumentsList *docList = key->values;
+if (!docList->head) {
+    docList->head = list;
+    docList->tail = list;
+} else {
+    docList->tail->next = list;
+    docList->tail = list;
+}
+docList->number_documents++;
+
             return;
         }
         key = key->next; // try next key 
