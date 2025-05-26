@@ -100,7 +100,7 @@ void reverseIndexFree(ReverseIndex *index, bool freeLists, bool freeDocs) {// fr
                     DocumentsListNode *docList = key->values->head;
                     while (docList) {
                         DocumentsListNode *nextDoc = docList->next;
-                        if (freeDocs && documentList->doc) {
+                        if (freeDocs && DocumentList->doc) {
                             // free document if requested
                             free(docList->document->title);
                             free(docList->document->body);
@@ -159,7 +159,7 @@ void reverseIndexDocument(ReverseIndex *index, Document *document) { // tokenize
 
         if (token[0] != '\0') {
             DocumentsListNode *list = malloc(sizeof(DocumentsListNode)); // create new list
-            list->doc = document; // set current document
+            list->document = document; // set current document
             list->next = NULL; // end of list
             reverseIndexPut(index, token, list); // add word to index
 
@@ -185,8 +185,8 @@ void reverseIndexSaveToFile(ReverseIndex *index, const char *filename) {// save 
             fprintf(file, "%s:", key->word);
             DocumentsListNode *doc = key->values;   // write all documents that contain this word
             while (doc) {
-                if (doc->doc && doc->doc->title) {
-                    fprintf(file, "%s,", doc->doc->title);  // write document title followed by comma 
+                if (document->document && document->document->title) {
+                    fprintf(file, "%s,", document->document->title);  // write document title followed by comma 
                 }
                 doc = doc->next;
             }
@@ -218,7 +218,7 @@ void reverseIndexLoadFromFile(ReverseIndex *index, const char *filename,
             Document *doc = getDocByTitle(docTitle);
             if (doc) {    
                 DocumentsListNode *node = malloc(sizeof(DocumentsListNode));
-                node->document = document;
+                node->document = Document;
                 node->next = NULL;
                 DocumentsList *list = malloc(sizeof(DocumentsList));
                 list->number_documents = 1;
