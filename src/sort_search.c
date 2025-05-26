@@ -38,12 +38,17 @@ Document* sorted_merge(Document* a, Document* b) {
 
     return result;
 }
-void sort_documents_by_relevance(Document *docs) {//sorting
-    
+Document* sort_documents_by_relevance(Document *docs) {//sorting
+      sort_by_relevance(&docs);  // sorts using merge sort
+    return docs;   
 }
 
 void print_sorted_documents(Document *docs) {//print sorted docuemnts
-   
+      while (docs) {
+        printf("Title: %s\n", docs->title);
+        printf("Relevance: %d\n", docs->relevance);
+        docs = docs->next;
+    }
 }
 // this function sorts the linked list using merge sort algorithm (because It has O(n log n) time complexity in all cases), it sorts documents in descending order by relevance score
 void sort_by_relevance(Document** headRef) {
