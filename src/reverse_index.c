@@ -145,7 +145,7 @@ void reverseIndexDocument(ReverseIndex *index, Document *document) { // tokenize
         normalise_word(token);
 
         if (token[0] != '\0') {
-            DocumentsListNode *list = malloc(sizeof(DocumentsList)); // create new list
+            DocumentsListNode *list = malloc(sizeof(DocumentsListNode)); // create new list
             list->doc = document; // set current document
             list->next = NULL; // end of list
             reverseIndexPut(index, token, list); // add word to index
@@ -185,7 +185,7 @@ void reverseIndexSaveToFile(ReverseIndex *index, const char *filename) {// save 
 }
 
 void reverseIndexLoadFromFile(ReverseIndex *index, const char *filename, 
-                            Document* (*getDocByTitle)(const char*)) { // load the word index from a text file
+    Document* (*getDocByTitle)(const char*)) { // load the word index from a text file
     FILE *file = fopen(filename, "r");  // open the file
     if (!file) {
         printf("Couldn't open %s for reading\n", filename);
@@ -204,7 +204,7 @@ void reverseIndexLoadFromFile(ReverseIndex *index, const char *filename,
         while (docTitle) { // find the document with this title
             Document *doc = getDocByTitle(docTitle);
             if (doc) {    
-                DocumentsListNode *list = malloc(sizeof(DocumentsList)); // create a new list entry
+                DocumentsListNode *list = malloc(sizeof(DocumentsListNode)); // create a new list entry
                 list->doc = doc;
                 list->next = NULL;
                 reverseIndexPut(index, word, list);// add to index

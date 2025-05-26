@@ -4,6 +4,7 @@
 #include "query.h"
 #include "reverse_index.h"
 #include "sort_search.h"
+
 int main(int argc, char** argv) {
     //we check if the user provided the dataset folder path as a command-line argument:
     if (argc < 2) {
