@@ -3,6 +3,7 @@
 # include <stdlib.h>
 # include <string.h>
 
+
 // function to count number document in docuemnts linked list
 int number_documents_list(Document* head) {
     int count = 0; // to know the current documents in list
