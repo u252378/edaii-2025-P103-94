@@ -220,8 +220,7 @@ void reverseIndexLoadFromFile(ReverseIndex *index, const char *filename,
                 DocumentsListNode *node = malloc(sizeof(DocumentsListNode));
                 node->next = NULL;  //initializes the next of the node
                 node->document = doc;
-                node->next = NULL;
-                reverseIndexPut(index, token, node); // add to index
+                reverseIndexPut(index, word, node); // add to index
             
             }
             docTitle = strtok(NULL, ",");  // get next document title
