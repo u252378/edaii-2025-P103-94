@@ -1,7 +1,6 @@
 //in this file we will create the data structures of lab 1:
 #ifndef DOCUMENT_H
 #define DOCUMENT_H
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -13,13 +12,13 @@ struct Link;
 struct Document;
 
 //LINK STRUCT:
-typedef struct {
+typedef struct Link {
     int id;
     struct Link* next;
 } Link;
   
 //DOCUMENT STRUCT:
-typedef struct {
+typedef struct Document{
     int doc_id;
     char* title;
     char* body;
@@ -31,7 +30,7 @@ typedef struct {
 
 typedef struct document_list_node{
     Document *document;
-    struct docuemnt_list_node *next;
+    struct document_list_node *next;
 } DocumentsListNode;
 
 typedef struct documents_list{

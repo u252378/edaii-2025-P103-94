@@ -108,10 +108,8 @@ void reverseIndexFree(ReverseIndex *index, bool freeLists, bool freeDocs) {// fr
 }
 
 
-// Normalise words in the parser (uppercase, puncation, etc.)
-/*fuction to convert all words to lowercase,
-and also to only accept letters,
-and store the final word in the same place */
+// Normalise words in the parser (uppercase, puncation, etc.)fuction to convert all words to lowercase,and also to only accept letters,
+//and store the final word in the same place 
 void normalise_word(char *keyword) {
     int i = 0; // index for reading original word
     int j = 0; // index for writing the changed word
