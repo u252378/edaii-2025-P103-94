@@ -21,5 +21,8 @@ void set_edge(Graph* graph, int i, int j, float weight);
 void list_vertex(Graph* graph);
 void list_edges(Graph* graph);
 void print_matrix(Graph * graph);
+//Get indegree of a document in the graph and print it as the relevance score: 
+int get_indegree(Graph* graph, int j);
+void print_relevance_scores(Graph* graph);
 
 #endif

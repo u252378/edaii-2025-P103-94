@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "sort_search.h"
 
+void sort_by_relevance(Document** headRef);
 // this function splits a linked list into two halves, use this for merge sort (divide step).
 void split_list(Document* source, Document** front, Document** back) {
     Document* slow = source;       // slow pointer (moves one step at a time)
@@ -38,7 +39,18 @@ Document* sorted_merge(Document* a, Document* b) {
 
     return result;
 }
+Document* sort_documents_by_relevance(Document *docs) {//sorting
+      sort_by_relevance(&docs);  // sorts using merge sort
+    return docs;   
+}
 
+void print_sorted_documents(const Document *docs) {//print sorted docuemnts
+      while (docs) {
+        printf("Title: %s\n", docs->title);
+        printf("Relevance: %.2f\n" ,docs->relevance);
+        docs = docs->next;
+    }
+}
 // this function sorts the linked list using merge sort algorithm (because It has O(n log n) time complexity in all cases), it sorts documents in descending order by relevance score
 void sort_by_relevance(Document** headRef) {
     Document* head = *headRef;

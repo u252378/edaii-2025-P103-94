@@ -14,16 +14,16 @@ int main(int argc, char** argv) {
 
     //now, this loads all documents from the specified folder path:
     Document* docs = load_documents_from_folder(argv[1]);
-    ReverseIndex *index = reverseIndexInit(1000); // or another appropriate slot count
-    build_reverse_index(index, docs); // assuming this is your function to populate it
+    ReverseIndex *index = build_reverse_index( docs); // or another appropriate slot count
+     // assuming this is your function to populate it
 
     //check if loading failed or no documents were found, we will notify the user and exit.
     if (!docs) {
         printf("No documents found or failed to load.\n");
-        return 1; //EXIT wih error.
+        return 1; //EXIT wih error
     }
     print_reverse_index(index);  
-    free_reverse_index(index);  // frre memory
+    free_reverse_index(index);  // free memory
     //start traversing the linked list of loaded documents:
     Document* current = docs;
     while (current) {

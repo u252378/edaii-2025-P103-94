@@ -31,7 +31,7 @@ typedef struct Document{
 
 typedef struct DocumentsListNode{
     Document *document;
-    struct document_list_node *next;
+    struct DocumentsListNode *next;
 } DocumentsListNode;
 
 typedef struct DocumentsList{
