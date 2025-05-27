@@ -31,7 +31,7 @@ void normalise_word(char* word);
 void reverseIndexDocument(ReverseIndex *index, Document *document); // tokenize a document and add all its words to the index
 void reverseIndexSaveToFile(ReverseIndex *index, const char *filename); // saves the reverse index to a file 
 void reverseIndexLoadFromFile(ReverseIndex *index, const char *filename, Document* (*getDocByTitle)(const char*)); // loads a reverse index from a file into an existing index
-void build_reverse_index(ReverseIndex *index, Document *docs);
+ReverseIndex* build_reverse_index(ReverseIndex *index, Document *docs);
 void print_reverse_index(const ReverseIndex *index);
 
 #endif 
