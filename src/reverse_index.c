@@ -227,9 +227,8 @@ void reverseIndexLoadFromFile(ReverseIndex *index, const char *filename,
         }
     }
    
-
-
     fclose(file); //close the file
+}
     ReverseIndex* build_reverse_index(Document* docs) {
     ReverseIndex* index = reverseIndexInit(101); // elige slots adecuados
     while (docs) {
@@ -245,5 +244,4 @@ void print_reverse_index(const ReverseIndex* index) {
 
 void free_reverse_index(ReverseIndex* index) {
     reverseIndexFree(index, true, true); // o ajusta los flags según lo que necesites
-}
 }
