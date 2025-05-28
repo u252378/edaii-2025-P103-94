@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
   }
   docs = sort_documents_by_relevance(docs); // sorts the documents
   print_sorted_documents(docs); 
-  free_reverse_index(reverse_index); // free memory            // prints sorted documents
+  free_reverse_index(reverse_index,true); // free memory            // prints sorted documents
   free_documents(docs); // when finished, we have to free all the memory
                         // allocated for the document list.
   return 0;

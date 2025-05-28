@@ -94,6 +94,7 @@ DocumentsList *reverseIndexGet(
 
 void reverseIndexFree(ReverseIndex *index, bool freeLists, bool freeDocs) {
     if (!index) return;
+     (void)freeDocs; 
 
     for (int i = 0; i < index->slotsCount; i++) {
         ReverseIndexSlot *slot = index->slots[i];
