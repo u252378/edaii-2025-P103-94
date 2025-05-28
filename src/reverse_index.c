@@ -131,12 +131,20 @@ void reverseIndexFree(ReverseIndex *index, bool freeLists, bool freeDocs) {
 void normalise_word(char *keyword) {
     int i = 0, j = 0;
     while (keyword[i]) {
-        if (isalpha(keyword[i])) {  // Solo conserva letras
-            keyword[j++] = tolower(keyword[i]);  // Convierte a minúsculas
+        // Conserva solo letras (a-z, A-Z)
+        if ((keyword[i] >= 'a' && keyword[i] <= 'z') || 
+            (keyword[i] >= 'A' && keyword[i] <= 'Z')) {
+            
+            // Convertir a minúsculas manualmente
+            if (keyword[i] >= 'A' && keyword[i] <= 'Z') {
+                keyword[j++] = keyword[i] + ('a' - 'A');  // Conversión a minúscula
+            } else {
+                keyword[j++] = keyword[i];  // Ya está en minúscula
+            }
         }
         i++;
     }
-    keyword[j] = '\0';  // Termina la cadena
+    keyword[j] = '\0';
 }
 
 void reverseIndexDocument(ReverseIndex *reverse_index, Document *document) {
@@ -179,7 +187,7 @@ void reverseIndexDocument(ReverseIndex *reverse_index, Document *document) {
   }
 
   free(text);
-}
+
 
 void reverseIndexSaveToFile(
     ReverseIndex *index,
