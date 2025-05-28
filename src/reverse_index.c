@@ -130,14 +130,7 @@ void reverseIndexFree(ReverseIndex *index, bool freeLists, bool freeDocs) {
     free(index->slots);
     free(index);
 }
-        free(docList);  // Esta línea debe quedarse para liberar memoria correctamente
-
-        docList = nextDoc;
     
-
-
-    
-
 // Normalise words in the parser (uppercase, puncation, etc.)fuction to convert
 // all words to lowercase,and also to only accept letters,
 // and store the final word in the same place
