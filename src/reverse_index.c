@@ -93,13 +93,13 @@ DocumentsList *reverseIndexGet(
 }
 
 void reverseIndexFree(ReverseIndex *index, bool freeLists, bool freeDocs) {
-    for (int i = 0; i < index->slotsCount; i++) { // go through all slots
+    for (int i = 0; i < index->slotsCount; i++) {
         ReverseIndexSlot *slot = index->slots[i];
         if (slot) {
             ReverseIndexKey *key = slot->keys;
             while (key) {
                 ReverseIndexKey *nextKey = key->next;
-                free(key->word); // free the word
+                free(key->word);
 
                 if (freeLists && key->values) {
                     DocumentsListNode *docList = key->values->head;
@@ -107,7 +107,6 @@ void reverseIndexFree(ReverseIndex *index, bool freeLists, bool freeDocs) {
                         DocumentsListNode *nextDoc = docList->next;
 
                         if (freeDocs && docList->document) {
-                            // Free document fields if they exist
                             if (docList->document->title) {
                                 free(docList->document->title);
                             }
@@ -117,40 +116,27 @@ void reverseIndexFree(ReverseIndex *index, bool freeLists, bool freeDocs) {
                             free(docList->document);
                         }
                         
-                        free(docList); // free the list node
+                        free(docList);
                         docList = nextDoc;
                     }
-                    free(key->values); // free the DocumentsList structure
+                    free(key->values);
                 }
-                free(key); // free the key struct
+                free(key);
                 key = nextKey;
             }
-            free(slot); // free the slot
+            free(slot);
         }
     }
-    free(index->slots); // free the array of slots
-    free(index);        // free the index
+    free(index->slots);
+    free(index);
 }
         free(docList);  // Esta línea debe quedarse para liberar memoria correctamente
 
         docList = nextDoc;
-    }
-}
+    
 
-            }
-            free(docList); // free the list node
-            docList = nextDoc;
-          }
-        }
-        free(key); // free the key struct
-        key = nextKey;
-      }
-      free(slot); // free the slot
-    }
-  }
-  free(index->slots); // free the array of slots
-  free(index);        // free the index
-}
+
+    
 
 // Normalise words in the parser (uppercase, puncation, etc.)fuction to convert
 // all words to lowercase,and also to only accept letters,
