@@ -14,11 +14,13 @@ int main(int argc, char **argv) {
   }
 
   // now, this loads all documents from the specified folder path:
+  printf("Loading")
   Document *docs = load_documents_from_folder(argv[1]);
   if (!docs) {
     printf("No documents found or failed to load.\n");
     return 1; // EXIT wih error
   }
+  printf("Building reerse index")
   ReverseIndex *index = build_reverse_index( docs); // or another appropriate slot count
              // assuming this is your function to populate it
 
