@@ -22,79 +22,115 @@ Link *create_link(int id) {
 
 // FUNCTION PARSE:
 // parse a single document file:
+// En document_desserialize():
 Document *document_desserialize(char *path) {
-  FILE *file = fopen(path, "r");
-  if (!file) return NULL;
+    FILE *file = fopen(path, "r");
+    if (!file) return NULL;
 
-  Document *doc = (Document *)malloc(sizeof(Document));
-  if (!doc) {
-    fclose(file);
-    return NULL;
-  }
-
-  char buffer[262144];
-  int bufferIdx = 0;
-  char ch;
-
-  // Leer ID
-  if (fgets(buffer, sizeof(buffer), file) == NULL) {
-    fclose(file);
-    free(doc);
-    return NULL;
-  }
-  doc->doc_id = atoi(buffer);
-
-  // Leer título
-  if (fgets(buffer, sizeof(buffer), file) == NULL) {
-    fclose(file);
-    free(doc);
-    return NULL;
-  }
-  buffer[strcspn(buffer, "\n")] = '\0';
-  doc->title = strdup(buffer);
-
-  // Leer cuerpo y extraer links
-  bufferIdx = 0;
-  char linkBuffer[1000];
-  int linkBufferIdx = 0;
-  bool parsingLink = false;
-  Link *head = NULL, *tail = NULL;
-
-  while ((ch = fgetc(file)) != EOF) {
-    if (bufferIdx < (int)(sizeof(buffer) - 1)) buffer[bufferIdx++] = ch;
-
-    if (parsingLink) {
-      if (ch == ')') {
-        parsingLink = false;
-        linkBuffer[linkBufferIdx] = '\0';
-        int linkId = atoi(linkBuffer);
-        Link *newLink = create_link(linkId);
-        if (!newLink) break;
-        if (!head) head = tail = newLink;
-        else {
-          tail->next = newLink;
-          tail = newLink;
-        }
-        linkBufferIdx = 0;
-      } else if (ch != '(' && linkBufferIdx < (int)(sizeof(linkBuffer) - 1)) {
-        linkBuffer[linkBufferIdx++] = ch;
-      }
-    } else if (ch == ']') {
-      parsingLink = true;
+    Document *doc = (Document *)malloc(sizeof(Document));
+    if (!doc) {
+        fclose(file);
+        return NULL;
     }
-  }
 
-  buffer[bufferIdx] = '\0'; // null-terminate body string
+    // Inicializar todos los campos
+    doc->doc_id = 0;
+    doc->title = NULL;
+    doc->body = NULL;
+    doc->links = NULL;
+    doc->relevance = 0.0;
+    doc->next = NULL;
 
-  // Asignar cuerpo y enlaces al documento
-  doc->body = strdup(buffer);  // duplica buffer para cuerpo
-  doc->links = head;
-  doc->relevance = 0.0; // valor por defecto
+    char buffer[262144];
+    
+    // Leer ID
+    if (fgets(buffer, sizeof(buffer), file) == NULL) {
+        fclose(file);
+        free(doc);
+        return NULL;
+    }
+    doc->doc_id = atoi(buffer);
 
-  fclose(file);
-  return doc;
+    // Leer título
+    if (fgets(buffer, sizeof(buffer), file) == NULL) {
+        fclose(file);
+        free(doc);
+        return NULL;
+    }
+    buffer[strcspn(buffer, "\n")] = '\0';
+    doc->title = strdup(buffer);
+    if (!doc->title) {
+        fclose(file);
+        free(doc);
+        return NULL;
+    }
+
+    // Leer cuerpo y extraer links
+    size_t body_size = 0;
+    size_t body_capacity = 1024;
+    char *body = malloc(body_capacity);
+    if (!body) {
+        fclose(file);
+        free(doc->title);
+        free(doc);
+        return NULL;
+    }
+
+    Link *head = NULL, *tail = NULL;
+    int ch;
+    bool in_link = false;
+    char link_buffer[100];
+    size_t link_pos = 0;
+
+    while ((ch = fgetc(file)) != EOF) {
+        // Manejar crecimiento del buffer del cuerpo
+        if (body_size >= body_capacity - 1) {
+            body_capacity *= 2;
+            char *new_body = realloc(body, body_capacity);
+            if (!new_body) {
+                free(body);
+                fclose(file);
+                free(doc->title);
+                free(doc);
+                return NULL;
+            }
+            body = new_body;
+        }
+
+        body[body_size++] = (char)ch;
+
+        // Procesar links
+        if (ch == '[') {
+            in_link = true;
+            link_pos = 0;
+        } else if (in_link && ch == '(' && link_pos == 0) {
+            // Esperar el ID del link
+        } else if (in_link && ch == ')') {
+            in_link = false;
+            link_buffer[link_pos] = '\0';
+            int link_id = atoi(link_buffer);
+            Link *new_link = create_link(link_id);
+            if (!new_link) continue;
+            
+            if (!head) head = tail = new_link;
+            else {
+                tail->next = new_link;
+                tail = new_link;
+            }
+        } else if (in_link) {
+            if (link_pos < sizeof(link_buffer) - 1) {
+                link_buffer[link_pos++] = (char)ch;
+            }
+        }
+    }
+
+    body[body_size] = '\0';
+    doc->body = body;
+    doc->links = head;
+
+    fclose(file);
+    return doc;
 }
-
 
   
   
@@ -146,20 +182,20 @@ void print_document_details(const Document *doc) {
 
 // free all allocated memory for a list of documents:
 void free_documents(Document *head) {
-  while (head) {
-    Document *next = head->next; // save next doc in the list.
-
-    free(head->title);
-    free(head->body);
-
-    Link *link = head->links;
-    while (link) {
-      Link *tmp = link->next; // save next link.
-      free(link);
-      link = tmp; // move to next link.
+    while (head) {
+        Document *next = head->next;
+        
+        if (head->title) free(head->title);
+        if (head->body) free(head->body);
+        
+        Link *link = head->links;
+        while (link) {
+            Link *tmp = link->next;
+            free(link);
+            link = tmp;
+        }
+        
+        free(head);
+        head = next;
     }
-
-    free(head);
-    head = next; // move to next doc in the list.
-  }
 }

@@ -93,39 +93,39 @@ DocumentsList *reverseIndexGet(
 }
 
 void reverseIndexFree(ReverseIndex *index, bool freeLists, bool freeDocs) {
+    if (!index) return;
+
     for (int i = 0; i < index->slotsCount; i++) {
         ReverseIndexSlot *slot = index->slots[i];
-        if (slot) {
-            ReverseIndexKey *key = slot->keys;
-            while (key) {
-                ReverseIndexKey *nextKey = key->next;
-                free(key->word);
+        if (!slot) continue;
 
-                if (freeLists && key->values) {
-                    DocumentsListNode *docList = key->values->head;
-                    while (docList) {
-                        DocumentsListNode *nextDoc = docList->next;
-
-                        if (freeDocs && docList->document) {
-                            if (docList->document->title) {
-                                free(docList->document->title);
-                            }
-                            if (docList->document->body) {
-                                free(docList->document->body);
-                            }
-                            free(docList->document);
-                        }
-                        
-                        free(docList);
-                        docList = nextDoc;
+        ReverseIndexKey *key = slot->keys;
+        while (key) {
+            ReverseIndexKey *nextKey = key->next;
+            
+            // Liberar documentos primero
+            if (freeLists && key->values) {
+                DocumentsListNode *docList = key->values->head;
+                while (docList) {
+                    DocumentsListNode *nextDoc = docList->next;
+                    
+                    if (freeDocs && docList->document) {
+                        // Liberar campos del documento
+                        free(docList->document->title);
+                        free(docList->document->body);
+                        free(docList->document);
                     }
-                    free(key->values);
+                    free(docList);
+                    docList = nextDoc;
                 }
-                free(key);
-                key = nextKey;
+                free(key->values);
             }
-            free(slot);
+            
+            free(key->word);
+            free(key);
+            key = nextKey;
         }
+        free(slot);
     }
     free(index->slots);
     free(index);
