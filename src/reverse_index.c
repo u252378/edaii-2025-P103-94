@@ -92,8 +92,7 @@ DocumentsList *reverseIndexGet(
   return NULL; // word not found
 }
 
-void reverseIndexFree(ReverseIndex *index, bool freeLists,
-                      bool freeDocs) {          // free memory used by the index
+void reverseIndexFree(ReverseIndex *index, bool freeLists, bool freeDocs) {
   for (int i = 0; i < index->slotsCount; i++) { // go through all slots
     ReverseIndexSlot *slot = index->slots[i];
     if (slot) {
@@ -102,26 +101,36 @@ void reverseIndexFree(ReverseIndex *index, bool freeLists,
         ReverseIndexKey *nextKey = key->next;
         free(key->word); // free the word
 
-        if (freeLists) {
+        if (freeLists && key->values) {
           DocumentsListNode *docList = key->values->head;
           while (docList) {
             DocumentsListNode *nextDoc = docList->next;
+            
             if (freeDocs && docList->document) {
-              // free document if requested
-              if (freeLists && key->values != NULL) {
-    DocumentsListNode *docList = key->values->head;
-    while (docList) {
-        DocumentsListNode *nextDoc = docList->next;
-
-        // Opcional: imprimir para depurar
-        // printf("Liberando docList nodo %p para documento %p\n", (void*)docList, (void*)docList->document);
-
-        if (freeDocs && docList->document) {
-            // Comenta las siguientes líneas por ahora para descartar doble free
-            // free(docList->document->title);
-            // free(docList->document->body);
-            // free(docList->document);
+              // Free document fields if they exist
+              if (docList->document->title) {
+                free(docList->document->title);
+              }
+              if (docList->document->body) {
+                free(docList->document->body);
+              }
+              free(docList->document);
+            }
+            
+            free(docList); // free the list node
+            docList = nextDoc;
+          }
+          free(key->values); // free the DocumentsList structure
         }
+        free(key); // free the key struct
+        key = nextKey;
+      }
+      free(slot); // free the slot
+    }
+  }
+  free(index->slots); // free the array of slots
+  free(index);        // free the index
+}
 
         free(docList);  // Esta línea debe quedarse para liberar memoria correctamente
 
