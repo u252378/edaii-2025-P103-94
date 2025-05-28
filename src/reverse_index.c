@@ -160,27 +160,33 @@ void normalise_word(char *keyword) {
   keyword[j] = '\0';
 }
 
-void reverseIndexDocument(
-    ReverseIndex *index,
-    Document *document) { // tokenizes document body and adds all words to the
-                          // reverse index???
-  char *text = strdup(document->body);                   // copy the body
-  char *token = strtok(text, " \t\n\r.,;:!?()[]{}<>\""); // first word
+void reverseIndexDocument(ReverseIndex *index, Document *document) {
+  // Verificaciones de seguridad añadidas
+  if (!index || !document || !document->body) {
+    return;
+  }
 
+  char *text = strdup(document->body);
+  if (!text) {
+    return;  // Fallo en strdup
+  }
+
+  char *token = strtok(text, " \t\n\r.,;:!?()[]{}<>\"");
   while (token != NULL) {
     normalise_word(token);
 
     if (token[0] != '\0') {
-      DocumentsListNode *list =
-          malloc(sizeof(DocumentsListNode)); // create new list
-      list->document = document;             // set current document
-      list->next = NULL;                     // end of list
-      reverseIndexPut(index, token, list);   // add word to index
+      DocumentsListNode *list = malloc(sizeof(DocumentsListNode));
+      if (list) {  // Verificar asignación de memoria
+        list->document = document;
+        list->next = NULL;
+        reverseIndexPut(index, token, list);
+      }
     }
-    token = strtok(NULL, " \t\n\r.,;:!?()[]{}<>\""); // next word
+    token = strtok(NULL, " \t\n\r.,;:!?()[]{}<>\"");
   }
 
-  free(text); // free the copied text
+  free(text);
 }
 
 void reverseIndexSaveToFile(
