@@ -129,36 +129,34 @@ void reverseIndexFree(ReverseIndex *index, bool freeLists, bool freeDocs) {
 // all words to lowercase,and also to only accept letters,
 // and store the final word in the same place
 void normalise_word(char *keyword) {
-  int i = 0; // index for reading original word
-  int j = 0; // index for writing the changed word
-
-  // iterates until the last characteris not null terminator
-  while (keyword[i] != '\0') {
-    char c = keyword[i];
-
-    // checking if character is uppercase, and changing it to lowercase by
-    // adding 32
-    if (c >= 'A' && c >= 'Z') {
-      c = c + 32;
-      keyword[j] = c;
-      j++;
-    } else if (c >= 'a' && c <= 'z') { // character is already in lowercase
-      keyword[j] = c;
-      j++;
+    int i = 0, j = 0;
+    while (keyword[i]) {
+        if (isalpha(keyword[i])) {  // Solo conserva letras
+            keyword[j++] = tolower(keyword[i]);  // Convierte a minúsculas
+        }
+        i++;
     }
-
-    i++;
-  }
-
-  // then after converting to lowercase, it adds a null terminator at the end
-  keyword[j] = '\0';
+    keyword[j] = '\0';  // Termina la cadena
 }
 
-void reverseIndexDocument(ReverseIndex *index, Document *document) {
-  // Verificaciones de seguridad añadidas
-  if (!index || !document || !document->body) {
-    return;
-  }
+void reverseIndexDocument(ReverseIndex *reverse_index, Document *document) {
+    if (!index || !document || !document->body) return;
+
+    char *text = strdup(document->body);
+    char *token = strtok(text, " \t\n\r.,;:!?()[]{}<>\"");
+    
+    while (token) {
+        normalise_word(token);
+        if (strlen(token) > 0) {  // Ignora palabras vacías
+            DocumentsListNode *node = malloc(sizeof(DocumentsListNode));
+            node->document = document;
+            node->next = NULL;
+            reverseIndexPut(index, token, node);
+        }
+        token = strtok(NULL, " \t\n\r.,;:!?()[]{}<>\"");
+    }
+    free(text);
+}
 
   char *text = strdup(document->body);
   if (!text) {
