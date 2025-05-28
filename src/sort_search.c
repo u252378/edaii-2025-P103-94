@@ -1,7 +1,26 @@
 #include "sort_search.h"
 #include <stdio.h>
 #include <stdlib.h>
-
+float calculate_relevance(Document *doc) {
+    if (!doc) return 0.0f;
+    
+    // 1. Base: links entrantes (indegree)
+    float relevance = 0.0f;
+    
+    // 2. Factor: longitud del contenido (normalizado)
+    if (doc->body) {
+        relevance += strlen(doc->body) / 10000.0f; // Ajusta según necesidad
+    }
+    
+    // 3. Factor: número de links salientes
+    Link *link = doc->links;
+    while (link) {
+        relevance += 0.5f; // Peso para cada link saliente
+        link = link->next;
+    }
+    
+    return relevance;
+}
 void sort_by_relevance(Document **headRef);
 // this function splits a linked list into two halves, use this for merge sort
 // (divide step).
@@ -60,22 +79,20 @@ void print_sorted_documents(const Document *docs) { // print sorted docuemnts
 // has O(n log n) time complexity in all cases), it sorts documents in
 // descending order by relevance score
 void sort_by_relevance(Document **headRef) {
-  Document *head = *headRef;
-
-  // base case: if list is empty or has only one element
-  if (!head || !head->next)
-    return;
-
-  Document *a; // front half
-  Document *b; // back half
-
-  // split the list into 'a' and 'b' halves
-  split_list(head, &a, &b);
-
-  // recursively sort both halves
-  sort_by_relevance(&a);
-  sort_by_relevance(&b);
-
-  // merge the two sorted halves
-  *headRef = sorted_merge(a, b);
+    Document *current = *headRef;
+    // Primero calcular relevancia
+    while (current) {
+        current->relevance = calculate_relevance(current);
+        current = current->next;
+    }
+    
+    // Luego ordenar (tu implementación existente)
+    Document *head = *headRef;
+    if (!head || !head->next) return;
+    
+    Document *a, *b;
+    split_list(head, &a, &b);
+    sort_by_relevance(&a);
+    sort_by_relevance(&b);
+    *headRef = sorted_merge(a, b);
 }
