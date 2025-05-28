@@ -5,7 +5,7 @@ compile:
 	
 r:
 	make compile
-	./main.out ./dataset
+	./main.out ./datasets
 
 v: 
 	make compile
