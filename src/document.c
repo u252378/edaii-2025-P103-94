@@ -65,8 +65,8 @@ Document *document_desserialize(char *path) {
                                // copies the title string into doc->title
 
   // parse body
-  char linkBuffer[64]; // buffer to store link ID strings
-  int linkBufferSize = 64;
+  char linkBuffer[1000]; // buffer to store link ID strings
+  int linkBufferSize = 1000;
   int linkBufferIdx = 0;           // index for link buffer
   bool parsingLink = false;        // flag for link parsing state
   /*Link *link = LinksInit();*/    // what is this for?????
