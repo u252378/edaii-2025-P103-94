@@ -15,8 +15,7 @@ ReverseIndex *reverseIndexInit(
   return index;                           // return the new index
 }
 
-static int hash(char *word,
-                int slotsCount) { // function to hash a word into a number
+static int hash(char *word,int slotsCount) { // function to hash a word into a number
   unsigned long hash = 5381;      // initial value
   int c;
   while ((c = *word++)) {            // loop through each character in the word
@@ -73,9 +72,7 @@ void reverseIndexPut(
   index->unique_keywords++;     // increase total keys in index
 }
 
-DocumentsList *reverseIndexGet(
-    ReverseIndex *index,
-    char *word) { // function to get the list of documents for a word
+DocumentsList *reverseIndexGet(ReverseIndex *index,char *word) { // function to get the list of documents for a word
   int slot = hash(word, index->slotsCount);       // get index using hash
   ReverseIndexSlot *slotPtr = index->slots[slot]; // get the slot
 
@@ -148,44 +145,30 @@ void normalise_word(char *keyword) {
 }
 
 void reverseIndexDocument(ReverseIndex *reverse_index, Document *document) {
-    if (!index || !document || !document->body) return;
+    if (!reverse_index || !document || !document->body) return;
 
     char *text = strdup(document->body);
+    if (!text) {
+        return;  // Fallo en strdup
+    }
+
     char *token = strtok(text, " \t\n\r.,;:!?()[]{}<>\"");
-    
-    while (token) {
+    while (token != NULL) {
         normalise_word(token);
-        if (strlen(token) > 0) {  // Ignora palabras vacías
-            DocumentsListNode *node = malloc(sizeof(DocumentsListNode));
-            node->document = document;
-            node->next = NULL;
-            reverseIndexPut(index, token, node);
+
+        if (token[0] != '\0') {
+            DocumentsListNode *list = malloc(sizeof(DocumentsListNode));
+            if (list) {  // Verificar asignación de memoria
+                list->document = document;
+                list->next = NULL;
+                reverseIndexPut(reverse_index, token, list);
+            }
         }
         token = strtok(NULL, " \t\n\r.,;:!?()[]{}<>\"");
     }
+
     free(text);
 }
-
-  char *text = strdup(document->body);
-  if (!text) {
-    return;  // Fallo en strdup
-  }
-
-  char *token = strtok(text, " \t\n\r.,;:!?()[]{}<>\"");
-  while (token != NULL) {
-    normalise_word(token);
-
-    if (token[0] != '\0') {
-      DocumentsListNode *list = malloc(sizeof(DocumentsListNode));
-      if (list) {  // Verificar asignación de memoria
-        list->document = document;
-        list->next = NULL;
-        reverseIndexPut(index, token, list);
-      }
-    }
-    token = strtok(NULL, " \t\n\r.,;:!?()[]{}<>\"");
-  }
-
   free(text);
 
 
