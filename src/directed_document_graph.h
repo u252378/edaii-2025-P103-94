@@ -1,6 +1,5 @@
 #ifndef DIRECTED_DOCUMENT_GRAPH_H
 #define DIRECTED_DOCUMENT_GRAPH_H
-
 #include "document.h"
 
 typedef struct {
