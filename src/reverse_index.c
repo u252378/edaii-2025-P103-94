@@ -108,9 +108,27 @@ void reverseIndexFree(ReverseIndex *index, bool freeLists,
             DocumentsListNode *nextDoc = docList->next;
             if (freeDocs && docList->document) {
               // free document if requested
-              free(docList->document->title);
-              free(docList->document->body);
-              free(docList->document);
+              if (freeLists && key->values != NULL) {
+    DocumentsListNode *docList = key->values->head;
+    while (docList) {
+        DocumentsListNode *nextDoc = docList->next;
+
+        // Opcional: imprimir para depurar
+        // printf("Liberando docList nodo %p para documento %p\n", (void*)docList, (void*)docList->document);
+
+        if (freeDocs && docList->document) {
+            // Comenta las siguientes líneas por ahora para descartar doble free
+            // free(docList->document->title);
+            // free(docList->document->body);
+            // free(docList->document);
+        }
+
+        free(docList);  // Esta línea debe quedarse para liberar memoria correctamente
+
+        docList = nextDoc;
+    }
+}
+
             }
             free(docList); // free the list node
             docList = nextDoc;
