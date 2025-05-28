@@ -57,7 +57,7 @@ Document *document_desserialize(char *path) {
   bufferIdx = 0;
   char linkBuffer[1000];
   int linkBufferIdx = 0;
-  int parsingLink = 0;
+  bool parsingLink = false;
   Link *head = NULL, *tail = NULL;
 
   while ((ch = fgetc(file)) != EOF) {
@@ -65,7 +65,7 @@ Document *document_desserialize(char *path) {
 
     if (parsingLink) {
       if (ch == ')') {
-        parsingLink = 0;
+        parsingLink = false;
         linkBuffer[linkBufferIdx] = '\0';
         int linkId = atoi(linkBuffer);
         Link *newLink = create_link(linkId);
@@ -80,8 +80,21 @@ Document *document_desserialize(char *path) {
         linkBuffer[linkBufferIdx++] = ch;
       }
     } else if (ch == ']') {
-      parsingLink = 1;
-    }}
+      parsingLink = true;
+    }
+  }
+
+  buffer[bufferIdx] = '\0'; // null-terminate body string
+
+  // Asignar cuerpo y enlaces al documento
+  doc->body = strdup(buffer);  // duplica buffer para cuerpo
+  doc->links = head;
+  doc->relevance = 0.0; // valor por defecto
+
+  fclose(file);
+  return doc;
+}
+
 
   char buffer[262144]; // creation of a buffer
   int bufferSize = 262144;
