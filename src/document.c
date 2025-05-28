@@ -23,17 +23,76 @@ Link *create_link(int id) {
 // FUNCTION PARSE:
 // parse a single document file:
 Document *document_desserialize(char *path) {
-  FILE *file = fopen(path, "r"); // open the document in read mode
-  if (!file)
-    return NULL; // check that it has opened correctly
+  FILE *file = fopen(path, "r");
+  if (!file) return NULL;
 
-  Document *doc = (Document *)malloc(
-      sizeof(Document)); // allocate memory for a new document
-  if (!doc) { // if the memory allocation fails we close the file and return
-              // NULL
+  Document *doc = (Document *)malloc(sizeof(Document));
+  if (!doc) {
     fclose(file);
     return NULL;
   }
+
+  char buffer[262144];
+  int bufferIdx = 0;
+  char ch;
+
+  // Leer ID
+  if (fgets(buffer, sizeof(buffer), file) == NULL) {
+    fclose(file);
+    free(doc);
+    return NULL;
+  }
+  doc->doc_id = atoi(buffer);
+
+  // Leer título
+  if (fgets(buffer, sizeof(buffer), file) == NULL) {
+    fclose(file);
+    free(doc);
+    return NULL;
+  }
+  buffer[strcspn(buffer, "\n")] = '\0';
+  doc->title = strdup(buffer);
+
+  // Leer cuerpo y extraer links
+  bufferIdx = 0;
+  char linkBuffer[1000];
+  int linkBufferIdx = 0;
+  bool parsingLink = false;
+  Link *head = NULL, *tail = NULL;
+
+  while ((ch = fgetc(file)) != EOF) {
+    if (bufferIdx < sizeof(buffer) - 1) buffer[bufferIdx++] = ch;
+
+    if (parsingLink) {
+      if (ch == ')') {
+        parsingLink = false;
+        linkBuffer[linkBufferIdx] = '\0';
+        int linkId = atoi(linkBuffer);
+        Link *newLink = create_link(linkId);
+        if (!newLink) break;
+        if (!head) head = tail = newLink;
+        else {
+          tail->next = newLink;
+          tail = newLink;
+        }
+        linkBufferIdx = 0;
+      } else if (ch != '(' && linkBufferIdx < sizeof(linkBuffer) - 1) {
+        linkBuffer[linkBufferIdx++] = ch;
+      }
+    } else if (ch == ']') {
+      parsingLink = true;
+    }
+  }
+
+  buffer[bufferIdx] = '\0';
+  doc->body = strdup(buffer);
+  doc->links = head;
+  doc->relevance = 0.0;
+
+  fclose(file);
+  return doc;
+}
+
 
   char buffer[262144]; // creation of a buffer
   int bufferSize = 262144;
