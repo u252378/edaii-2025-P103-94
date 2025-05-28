@@ -166,10 +166,8 @@ void reverseIndexDocument(ReverseIndex *reverse_index, Document *document) {
         }
         token = strtok(NULL, " \t\n\r.,;:!?()[]{}<>\"");
     }
-
-    free(text);
 }
-  free(text);
+  
 
 
 void reverseIndexSaveToFile(
@@ -253,7 +251,5 @@ void print_reverse_index(const ReverseIndex *index) {
   reverseIndexSaveToFile((ReverseIndex *)index, "reverse_index.txt");
 }
 
-void free_reverse_index(ReverseIndex *index) {
-  reverseIndexFree(index, true,
-                   true); // o ajusta los flags según lo que necesites
+void free_reverse_index(ReverseIndex *index) { reverseIndexFree(index, true, true); // o ajusta los flags según lo que necesites
 }
