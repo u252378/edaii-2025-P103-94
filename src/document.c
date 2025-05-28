@@ -81,7 +81,7 @@ Document *document_desserialize(char *path) {
       }
     } else if (ch == ']') {
       parsingLink = 1;
-
+    }}
 
   char buffer[262144]; // creation of a buffer
   int bufferSize = 262144;
