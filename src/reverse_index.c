@@ -103,18 +103,11 @@ void reverseIndexFree(ReverseIndex *index, bool freeLists, bool freeDocs) {
         while (key) {
             ReverseIndexKey *nextKey = key->next;
             
-            // Liberar documentos primero
             if (freeLists && key->values) {
                 DocumentsListNode *docList = key->values->head;
                 while (docList) {
                     DocumentsListNode *nextDoc = docList->next;
-                    
-                    if (freeDocs && docList->document) {
-                        // Liberar campos del documento
-                        free(docList->document->title);
-                        free(docList->document->body);
-                        free(docList->document);
-                    }
+                    // Solo liberamos el nodo de la lista, no el documento
                     free(docList);
                     docList = nextDoc;
                 }

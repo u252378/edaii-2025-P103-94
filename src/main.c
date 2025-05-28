@@ -27,7 +27,6 @@ int main(int argc, char **argv) {
   // check if loading failed or no documents were found, we will notify the user
   // and exit.
   print_reverse_index(reverse_index);
-  free_reverse_index(reverse_index); // free memory
   // start traversing the linked list of loaded documents:
   Document *current = docs;
   while (current) {
@@ -37,7 +36,8 @@ int main(int argc, char **argv) {
     current = current->next; // to move to the next document in the linked list,
   }
   docs = sort_documents_by_relevance(docs); // sorts the documents
-  print_sorted_documents(docs);             // prints sorted documents
+  print_sorted_documents(docs); 
+  free_reverse_index(reverse_index); // free memory            // prints sorted documents
   free_documents(docs); // when finished, we have to free all the memory
                         // allocated for the document list.
   return 0;
