@@ -26,6 +26,8 @@ void remove_duplicate_results(DocumentsList *results) {
         current = current->next; //move to the next doc to compare
     }
 }
+
+//function to show all details of a document: 
 void show_full_document(Document *doc) {
     if (!doc) return;
     
@@ -34,51 +36,53 @@ void show_full_document(Document *doc) {
     printf("Relevance: %.2f\n", doc->relevance);
     printf("---------------------------------\n");
     printf("%s\n", doc->body);
-    
-    // Mostrar links
-    if (doc->links) {
+
+    if (doc->links) { //if the document contains links to other documents
         printf("Links:\n");
         Link *current = doc->links;
         while (current != NULL) {
-            printf("- Documento ID: %d\n", current->id);
+            printf("- Document ID: %d\n", current->id); //print each linked document's ID
             current = current->next;
         }
     }
     
     printf("=================================\n");
-    // Se eliminó completamente la línea de "Press Enter to continue..."
 }
+
+//function to let user select a document from a list and view its full content:
 void select_document(DocumentsList *results) {
-    if (!results || !results->head) {
+    if (!results || !results->head) { //if the result list is NULL or empty, print a message and return
         printf("No documents available.\n");
         return;
     }
 
-    // Show numbered list
+    //show numbered list
     printf("\nSearch results:\n");
+    //traverse the results list and print numbered titles with their document IDs
     DocumentsListNode *node = results->head;
     int count = 1;
     while (node) {
-        printf("%d. %s (ID: %d)\n", count++, node->document->title, node->document->doc_id);
-        node = node->next;
+        printf("%d. %s (ID: %d)\n", count++, node->document->title, node->document->doc_id); //print each document's number, title, and ID
+        node = node->next; //move to the next doc
     }
 
-    // Get user selection
     int choice;
     printf("\nEnter document number to view (0 to cancel): ");
+    //read the user's choice and validate input type
     if (scanf("%d", &choice) != 1) {
-        while (getchar() != '\n'); // Clear input buffer
+        while (getchar() != '\n'); //clear input buffer
         return;
     }
-    while (getchar() != '\n'); // Clear the newline
+    while (getchar() != '\n'); //clear the newline
 
-    // Validate and show
+    //if the input is a valid choice (within range)
     if (choice > 0 && choice < count) {
         node = results->head;
-        for (int i = 1; i < choice; i++) node = node->next;
-        show_full_document(node->document);
+        for (int i = 1; i < choice; i++) node = node->next; //traverse the list to the selected document
+        show_full_document(node->document); //show the full document details
     }
 }
+
 int main(int argc, char **argv) {
     //check if dataset folder path is provided:
     if (argc < 2) {
@@ -131,7 +135,7 @@ int main(int argc, char **argv) {
     printf("\n=== All documents ===\n");
     Document *current = docs;
     while (current) {
-        print_document_details(current);  //prints ID, title, body and links
+        print_document_details(current); //prints ID, title, body and links
         current = current->next;
     }
 
