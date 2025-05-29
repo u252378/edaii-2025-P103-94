@@ -68,36 +68,36 @@ Document *document_desserialize(FILE *file) {
 
   
   
-Document *load_documents_from_folder(const char *folder_path) {
-  DIR *dir =
-      opendir(folder_path); // open the directory specified by folder_path.
-  if (!dir)
-    return NULL; // check if the directory can be open, if not return NULL.
+Document *load_documents_from_folder(char *folder_path) {
+    DIR *dir = opendir(folder_path);
+    if (!dir) return NULL;
 
-  struct dirent *entry; // declare a pointer to hold the directory entries
-  Document *head = NULL;
-  Document *tail = NULL;
+    struct dirent *entry;
+    Document *head = NULL;
 
-  while ((entry = readdir(dir)) != NULL) { // loop through each entry
-    char fullpath[1024]; // array to store ful path of the file.
-    snprintf(fullpath, sizeof(fullpath), "%s/%s", folder_path,
-             entry->d_name); // create full file path.
-    struct stat path_stat;
-    if (stat(fullpath, &path_stat) == 0 && S_ISREG(path_stat.st_mode)) {
-      Document *doc = document_desserialize(fullpath); // desserialize the doc.
-      if (doc) {
-        if (!head)
-          head = tail =
-              doc; // if list is empty, set head and tail to the new document.
-        else {     // if list is NOT empty, append the document to the list
-          tail->next = doc; // set the current tail's next to the new doc.
-          tail = doc;       // update the tail to point to the new document.
+    while ((entry = readdir(dir))) {
+        if (entry->d_type == DT_REG) { // Solo archivos normales
+            char fullpath[1024];
+            snprintf(fullpath, sizeof(fullpath), "%s/%s", folder_path, entry->d_name);
+
+            FILE *file = fopen(fullpath, "r");
+            if (!file) {
+                perror("Failed to open file");
+                continue;
+            }
+
+            Document *doc = document_desserialize(file);  // Aquí pasamos FILE *
+            fclose(file);  // Cerramos el archivo
+
+            if (doc) {
+                doc->next = head;
+                head = doc;
+            }
         }
-      }
     }
-  }
-  closedir(dir);
-  return head;
+
+    closedir(dir);
+    return head;
 }
 
 // print details of a document:
