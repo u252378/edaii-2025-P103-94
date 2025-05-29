@@ -56,7 +56,7 @@ Document *document_deserialize(FILE *file) {
   }
 
   Document *doc = malloc(sizeof(Document));
-  doc->id = id;
+  doc->doc_id = id;
   doc->title = title;
   doc->body = body;
   doc->next = NULL;
