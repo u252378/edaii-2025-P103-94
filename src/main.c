@@ -48,7 +48,11 @@ int main(int argc, char **argv) {
         printf("No documents found or failed to load.\n");
         return 1;
     }
-
+ Document *doc_current = docs;  // Cambiamos el nombre a doc_current
+    while (doc_current) {
+        doc_current->relevance = calculate_relevance(doc_current);
+        doc_current = doc_current->next;
+    }
     // Construcción del índice inverso
     ReverseIndex *reverse_index = build_reverse_index(docs);
     if (!reverse_index) {
