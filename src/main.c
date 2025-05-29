@@ -4,56 +4,59 @@
 #include "sort_search.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h> // Para tolower()
+#include <ctype.h> //for tolower()
 
-// Normaliza una palabra (minúsculas, sin puntuación)
+//**normalize words in the parser (uppercase, punctuation, etc.) [LAB 3]:
 void normalize_keyword(char *word) {
     int i = 0, j = 0;
     while (word[i]) {
         if (isalpha(word[i])) {
-            word[j++] = tolower(word[i]);
+            word[j++] = tolower(word[i]); //if it is in uppercase change it to lowercase
         }
-        i++;
+        i++; //move to the next char
     }
-    word[j] = '\0';
+    word[j] = '\0'; //null terminate the clean word
 }
+
+//function to remove duplicate results in case there is any:
 void remove_duplicate_results(DocumentsList *results) {
-    if (!results || !results->head) return;
+    if (!results || !results->head) return; //if the list is empty do nothing 
     
     DocumentsListNode *current = results->head;
     while (current) {
         DocumentsListNode *runner = current;
         while (runner->next) {
-            if (runner->next->document->doc_id == current->document->doc_id) {
+            if (runner->next->document->doc_id == current->document->doc_id) { //if next node is a duplicate (same document ID)
                 DocumentsListNode *temp = runner->next;
-                runner->next = runner->next->next;
-                free(temp);
-            } else {
-                runner = runner->next;
+                runner->next = runner->next->next; //skip the duplicate 
+                free(temp); //free the removed node
+            } 
+            else {
+                runner = runner->next; //move to the next node
             }
         }
-        current = current->next;
+        current = current->next; //move to the next doc to compare
     }
 }
+
 int main(int argc, char **argv) {
-    // Verificación de argumentos
+    //check if dataset folder path is provided:
     if (argc < 2) {
         printf("Usage: %s <dataset_folder>\n", argv[0]);
         return 1;
     }
-
-    // Carga de documentos
+    //load all docs from the folder
     Document *docs = load_documents_from_folder(argv[1]);
     if (!docs) {
         printf("No documents found or failed to load.\n");
-        return 1;
+        return 1; //EXIT with error if loading fails
     }
- Document *doc_current = docs;  // Cambiamos el nombre a doc_current
+    Document *doc_current = docs; //now, we compute the relevance score for each doc
     while (doc_current) {
         doc_current->relevance = calculate_relevance(doc_current);
         doc_current = doc_current->next;
     }
-    // Construcción del índice inverso
+    //build the reverse index for fast keyword lookups
     ReverseIndex *reverse_index = build_reverse_index(docs);
     if (!reverse_index) {
         printf("Failed to build reverse index.\n");
@@ -61,21 +64,18 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-   // Búsqueda interactiva mejorada
+   //interactive search (MAIN FEATURE OF OUR PROGRAM)
     char keyword[100];
     do {
-        printf("\nEnter a word to search (or type 'exit' to finish): ");
-        scanf("%99s", keyword);
-        normalize_keyword(keyword);
-
+        printf("\nHELLO! Welcome to our program, please enter a word/words that you want to look for (or type 'exit' to finish): "); //ASK THE USER FOR A WORD/WORDS
+        scanf("%99s", keyword); //reads user input
+        normalize_keyword(keyword); //call the function to normalize the word entered
         if (strcmp(keyword, "exit") == 0) {
-    // Liberar memoria antes de salir
-    free_reverse_index(reverse_index);
-    free_documents(docs);
-    return 0;
-}
-
-
+            //free memory and exit
+            free_reverse_index(reverse_index);
+            free_documents(docs);
+            return 0;
+        }
         DocumentsList *results = reverseIndexGet(reverse_index, keyword);
         if (!results || !results->head) {
             printf("No documents contain the word '%s'.\n", keyword);
