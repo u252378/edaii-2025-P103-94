@@ -26,7 +26,6 @@ float calculate_relevance(Document *doc) {
     if (doc->title) {
         relevance += strlen(doc->title) * 0.05f;
     }
-    
     return relevance;
 }
 void sort_by_relevance(Document **headRef);
