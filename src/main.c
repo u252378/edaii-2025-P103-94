@@ -17,7 +17,24 @@ void normalize_keyword(char *word) {
     }
     word[j] = '\0';
 }
-
+void remove_duplicate_results(DocumentsList *results) {
+    if (!results || !results->head) return;
+    
+    DocumentsListNode *current = results->head;
+    while (current) {
+        DocumentsListNode *runner = current;
+        while (runner->next) {
+            if (runner->next->document->doc_id == current->document->doc_id) {
+                DocumentsListNode *temp = runner->next;
+                runner->next = runner->next->next;
+                free(temp);
+            } else {
+                runner = runner->next;
+            }
+        }
+        current = current->next;
+    }
+}
 int main(int argc, char **argv) {
     // Verificación de argumentos
     if (argc < 2) {
@@ -40,27 +57,34 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    // --- PARTE NUEVA: Búsqueda interactiva ---
+   // Búsqueda interactiva mejorada
     char keyword[100];
-    printf("Enter a word to search (or type 'exit' to finish): ");
-    scanf("%99s", keyword);
-    normalize_keyword(keyword);
+    do {
+        printf("\nEnter a word to search (or type 'exit' to finish): ");
+        scanf("%99s", keyword);
+        normalize_keyword(keyword);
 
-    if (strcmp(keyword, "exit") != 0) {
+        if (strcmp(keyword, "exit") == 0) break;
+
         DocumentsList *results = reverseIndexGet(reverse_index, keyword);
         if (!results || !results->head) {
             printf("No documents contain the word '%s'.\n", keyword);
         } else {
-            printf("\nDocuments containing '%s':\n", keyword);
+            remove_duplicate_results(results); // Eliminar duplicados
+            
+            printf("\nDocuments containing '%s' (sorted by relevance):\n", keyword);
             DocumentsListNode *node = results->head;
             while (node) {
                 if (node->document) {
-                    printf("- %s (ID: %d)\n", node->document->title, node->document->doc_id);
+                    printf("- %s (ID: %d, Relevance: %.2f)\n", 
+                           node->document->title, 
+                           node->document->doc_id,
+                           node->document->relevance);
                 }
                 node = node->next;
             }
         }
-    }
+    } while (1);
 
     // --- PARTE ORIGINAL (todo lo que ya tenías) ---
     printf("\n=== All documents ===\n");
