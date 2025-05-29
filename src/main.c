@@ -26,7 +26,52 @@ void remove_duplicate_results(DocumentsList *results) {
         current = current->next; //move to the next doc to compare
     }
 }
+void show_full_document(Document *doc) {
+    if (!doc) return;
+    
+    printf("\n=================================\n");
+    printf("ID: %d\nTitle: %s\n", doc->doc_id, doc->title);
+    printf("Relevance: %.2f\n", doc->relevance);
+    printf("---------------------------------\n");
+    printf("%s\n", doc->body); // Muestra todo el contenido
+    if (doc->links && doc->links[0] != '\0') {
+        printf("Links: %s\n", doc->links);
+    }
+    printf("=================================\n");
+    printf("Press Enter to continue...");
+    while (getchar() != '\n'); // Espera Enter
+}
+void select_document(DocumentsList *results) {
+    if (!results || !results->head) {
+        printf("No documents available.\n");
+        return;
+    }
 
+    // Show numbered list
+    printf("\nSearch results:\n");
+    DocumentsListNode *node = results->head;
+    int count = 1;
+    while (node) {
+        printf("%d. %s (ID: %d)\n", count++, node->document->title, node->document->doc_id);
+        node = node->next;
+    }
+
+    // Get user selection
+    int choice;
+    printf("\nEnter document number to view (0 to cancel): ");
+    if (scanf("%d", &choice) != 1) {
+        while (getchar() != '\n'); // Clear input buffer
+        return;
+    }
+    while (getchar() != '\n'); // Clear the newline
+
+    // Validate and show
+    if (choice > 0 && choice < count) {
+        node = results->head;
+        for (int i = 1; i < choice; i++) node = node->next;
+        show_full_document(node->document);
+    }
+}
 int main(int argc, char **argv) {
     //check if dataset folder path is provided:
     if (argc < 2) {
@@ -70,18 +115,9 @@ int main(int argc, char **argv) {
         } 
         else {
             remove_duplicate_results(results); //this will remove any duplicates in case there is any
+      select_document(results); 
+    remove_duplicate_results(results);
     
-            printf("\nDocuments containing '%s' (sorted by relevance):\n", keyword);
-            DocumentsListNode *node = results->head;
-            while (node) {
-                if (node->document) {
-                    printf("- %s (ID: %d, Relevance: %.2f)\n", 
-                    node->document->title, 
-                    node->document->doc_id,
-                    node->document->relevance);
-                }
-                node = node->next; //move to the next node  
-            }
         }
     } while (1); //we did this in order for our code to repeat unless user types "exit"
 

@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <ctype.h>
 ReverseIndex *reverseIndexInit(int slots) { // function to create the reverse index (the hash table)
   ReverseIndex *index =
       malloc(sizeof(ReverseIndex)); // allocate memory for the index

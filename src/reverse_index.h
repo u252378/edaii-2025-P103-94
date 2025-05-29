@@ -34,5 +34,6 @@ void reverseIndexDocument(ReverseIndex *reverse_index,Document *document); // to
 void reverseIndexSaveToFile(ReverseIndex *reverse_index,const char *filename); // saves the reverse index to a file
 void reverseIndexLoadFromFile(ReverseIndex *reverse_index, const char *filename, Document *(*getDocByTitle)(const char *));
 void print_reverse_index(const ReverseIndex *index);
+ReverseIndex *build_reverse_index(Document *docs);
 
 #endif
