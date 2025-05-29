@@ -1,7 +1,6 @@
-// in this file we will create the functions: document_desserialize and
-// load_documents_from_folder
+// in this file we will create the functions: document_desserialize and load_documents_from_folder
 #include "document.h"
-#include <assert.h>
+#include <assert.h> //provides macros for adding diagnostics (used during debugging).
 #include <dirent.h> //to handle directory operations like opendir, readdir, closedir.
 #include <stdbool.h>
 #include <stdio.h>
@@ -13,7 +12,7 @@
 Link *create_link(int id) {
   Link *newLink = malloc(sizeof(Link)); // allocates memory for a new Link node.
   if (!newLink)
-    return NULL;    // return NULL if memory allocation fails.
+    return NULL; // return NULL if memory allocation fails.
   newLink->id = id; // set the link's ID
   newLink->next =
       NULL; // initializes the next pointer to NULL (end of the list).
@@ -22,114 +21,112 @@ Link *create_link(int id) {
 
 // FUNCTION PARSE:
 // parse a single document file:
-// En document_desserialize():
 Document *document_desserialize(FILE *file) {
-  if (!file) return NULL;
+  if (!file) return NULL; //return null if the pointer is invalid
 
   char buffer[4096];
 
-  // Leer línea 1: ID
-  if (!fgets(buffer, sizeof(buffer), file)) return NULL;
+  //read line 1: ID
+  if (!fgets(buffer, sizeof(buffer), file)) return NULL; 
   int id;
-  if (sscanf(buffer, "%d", &id) != 1) return NULL;
+  if (sscanf(buffer, "%d", &id) != 1) return NULL; //extract int ID from the line 
 
-  // Leer línea 2: Título
-  if (!fgets(buffer, sizeof(buffer), file)) return NULL;
-  char *title = strdup(buffer);
-  title[strcspn(title, "\n")] = '\0';  // quitar newline
+  //read line 2: doc title 
+  if (!fgets(buffer, sizeof(buffer), file)) return NULL; 
+  char *title = strdup(buffer); //duplicate the title string to allocate memory
+  title[strcspn(title, "\n")] = '\0';  //remove newline char at the end
 
-  // Leer el resto: Body
-  size_t body_size = 8192;
+  //reads the rest: body 
+  size_t body_size = 8192; //set initial buffer size for the body 
   char *body = malloc(body_size);
   if (!body) return NULL;
   body[0] = '\0';
-  size_t len = 0;
-  while (fgets(buffer, sizeof(buffer), file)) {
+  size_t len = 0; //initialize body with empty str
+
+  while (fgets(buffer, sizeof(buffer), file)) { //read line by line until EOF 
     size_t line_len = strlen(buffer);
     if (len + line_len + 1 > body_size) {
       body_size *= 2;
       body = realloc(body, body_size);
       if (!body) return NULL;
     }
-    strcat(body, buffer);
-    len += line_len;
+    strcat(body, buffer); //append line to body
+    len += line_len; //update total length
   }
 
+  //create and initialize the doc structure: 
   Document *doc = malloc(sizeof(Document));
   doc->doc_id = id;
   doc->title = title;
   doc->body = body;
   doc->next = NULL;
-  doc->links = NULL; // probablemente ya lo inicializas en otra parte
+  doc->links = NULL;
 
-  return doc;
+  return doc; //return the new doc
 }
 
-
-  
-  
-Document *load_documents_from_folder(char *folder_path) {
-    DIR *dir = opendir(folder_path);
-    if (!dir) return NULL;
+Document *load_documents_from_folder(char *folder_path) { //function to load all docs from the folder
+    DIR *dir = opendir(folder_path); //open the director specified
+    if (!dir) return NULL; //opening failed
 
     struct dirent *entry;
     Document *head = NULL;
 
-    while ((entry = readdir(dir))) {
-        if (entry->d_type == DT_REG) { // Solo archivos normales
+    while ((entry = readdir(dir))) { //read each file in the folder
+        if (entry->d_type == DT_REG) { //only regular files (IMPORTANT)
             char fullpath[1024];
-            snprintf(fullpath, sizeof(fullpath), "%s/%s", folder_path, entry->d_name);
+            snprintf(fullpath, sizeof(fullpath), "%s/%s", folder_path, entry->d_name); //build full path
 
             FILE *file = fopen(fullpath, "r");
             if (!file) {
                 perror("Failed to open file");
-                continue;
+                continue; //skip to next file 
             }
 
-            Document *doc = document_desserialize(file);  // Aquí pasamos FILE *
-            fclose(file);  // Cerramos el archivo
+            Document *doc = document_desserialize(file); //parse the doc file
+            fclose(file); //close file after reading
 
             if (doc) {
-                doc->next = head;
-                head = doc;
+                doc->next = head; //insert the document at the beginning of the list
+                head = doc; //update head pointer  
             }
         }
     }
 
-    closedir(dir);
-    return head;
+    closedir(dir); //close directory 
+    return head; //return linked list of docs
 }
 
-// print details of a document:
+//print details of a document:
 void print_document_details(const Document *doc) {
   printf("\n=== Document ID %d ===\n", doc->doc_id);
   printf("Title: %s\n", doc->title);
   printf("Body:\n%s\n", doc->body);
   printf("Links:\n");
 
-  const Link *link = doc->links; // pointer to traverse the links.
+  const Link *link = doc->links; //pointer to traverse the links.
   while (link) {
-    printf("  -> Document ID %d\n", link->id); // print each link's ID.
-    link = link->next; // move to the next link in the list.
+    printf("  -> Document ID %d\n", link->id); //print each link's ID.
+    link = link->next; //move to the next link in the list.
   }
 }
 
-// free all allocated memory for a list of documents:
+//free all allocated memory for a list of documents:
 void free_documents(Document *head) {
     while (head) {
-        Document *next = head->next;
+        Document *next = head->next; //store next document before freeing the current one
         
         if (head->title) free(head->title);
         if (head->body) free(head->body);
         
-        Link *link = head->links;
+        Link *link = head->links; //start freeing links 
         while (link) {
-            Link *tmp = link->next;
+            Link *tmp = link->next; //store new link before freeing current
             free(link);
             link = tmp;
         }
         
         free(head);
-        head = next;
+        head = next; //move to next doc
     }
 }
