@@ -23,7 +23,7 @@ Link *create_link(int id) {
 // FUNCTION PARSE:
 // parse a single document file:
 // En document_desserialize():
-Document *document_deserialize(FILE *file) {
+Document *document_desserialize(FILE *file) {
   if (!file) return NULL;
 
   char buffer[4096];
