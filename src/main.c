@@ -68,7 +68,13 @@ int main(int argc, char **argv) {
         scanf("%99s", keyword);
         normalize_keyword(keyword);
 
-        if (strcmp(keyword, "exit") == 0) break;
+        if (strcmp(keyword, "exit") == 0) {
+    // Liberar memoria antes de salir
+    free_reverse_index(reverse_index);
+    free_documents(docs);
+    return 0;
+}
+
 
         DocumentsList *results = reverseIndexGet(reverse_index, keyword);
         if (!results || !results->head) {
