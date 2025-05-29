@@ -1,10 +1,7 @@
-#ifndef SORT_SEARCH_H
-#define SORT_SEARCH_H
-#include "document.h"
+#ifndef SEARCH_H
+#define SEARCH_H
 
-Document *sort_documents_by_relevance(Document *head);
-void print_sorted_documents(const Document *head);
-// Añade estas líneas al final del archivo
-float calculate_relevance(Document *doc);
-void sort_documents_list(DocumentsListNode **headRef);
+// Function to check if a keyword is contained in a text
+int contains_substring(const char *text, const char *keyword);
+
 #endif
