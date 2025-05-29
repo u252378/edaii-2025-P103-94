@@ -3,14 +3,14 @@
 #include "document.h"
 
 typedef struct reverseIndexKey { // this struct represents a keyword
-  char *word;                    // the actual keyword
+  char *word; // the actual keyword
   DocumentsList *values; // linked list of documents that contain this word
   struct reverseIndexKey *next; // next keyword
 } ReverseIndexKey;
 
 typedef struct reverseIndexSlot { // this struct is one slot in the hash table
-  ReverseIndexKey *keys;          // pointer to the first keyword in this slot
-  int keysCount;                  // how many keywords are in this slot
+  ReverseIndexKey *keys; // pointer to the first keyword in this slot
+  int keysCount; // how many keywords are in this slot
 } ReverseIndexSlot;
 
 typedef struct reverseIndex {
@@ -21,9 +21,7 @@ typedef struct reverseIndex {
 
 ReverseIndex *
 reverseIndexInit(int slots); // create and initialize the reverse index
-void reverseIndexPut(ReverseIndex *index, char *word,
-                     DocumentsListNode *node); // add a word and its associated
-                                               // document list to the index
+void reverseIndexPut(ReverseIndex *index, char *word, DocumentsListNode *node); // add a word and its associated document list to the index
 void free_reverse_index(ReverseIndex *index);
 
 DocumentsList *reverseIndexGet(
@@ -32,11 +30,9 @@ DocumentsList *reverseIndexGet(
 
 void reverseIndexFree(ReverseIndex *index, bool freeLists, bool freeDocs);
 void normalise_word(char *word);
-void reverseIndexDocument(ReverseIndex *reverse_index,Document *document); // tokenize a document and add
-                                               // all its words to the index
+void reverseIndexDocument(ReverseIndex *reverse_index,Document *document); // tokenize a document and add all its words to the index
 void reverseIndexSaveToFile(ReverseIndex *reverse_index,const char *filename); // saves the reverse index to a file
-void reverseIndexLoadFromFile(ReverseIndex *reverse_index, const char *filename, Document *(*getDocByTitle)(const char *));
-                                               // file into an existing index
+void reverseIndexLoadFromFile(ReverseIndex *reverse_index, const char *filename, Document *(*getDocByTitle)(const char *)); file into an existing index
 ReverseIndex *build_reverse_index(Document *docs);
 void print_reverse_index(const ReverseIndex *index);
 
