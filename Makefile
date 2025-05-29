@@ -3,9 +3,12 @@ SRC_FILES := $(filter-out src/main.c, $(wildcard src/*.c))
 compile:
 	gcc -Wall -Wextra -Werror src/main.c $(SRC_FILES) -o main.out
 	
-r:
-	make compile
-	./main.out ./datasets
+r: compile
+	./main.out $(DATASET)
+
+# Luego puedes ejecutar:
+# make r DATASET=datasets/wikipedia270
+# make r DATASET=datasets/wikipedia540
 
 v: 
 	make compile
