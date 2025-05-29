@@ -11,14 +11,12 @@ typedef struct QueryNode {
   struct QueryNode *next;
 } QueryNode;
 
-// This is a data structure for the query linked list, containing pointer to
-// head
+// This is a data structure for the query linked list, containing pointer to head
 typedef struct {
   QueryNode *head;
 } QueryList;
 
-// This is a data structure for a circular queue that will store a maximum of 3
-// queries
+// This is a data structure for a circular queue that will store a maximum of 3 queries
 typedef struct {
   char *elements[QUEUE_SIZE];
   int front;

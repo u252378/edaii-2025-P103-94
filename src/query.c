@@ -33,8 +33,7 @@ void free_query_list(QueryList *query_list) {
   // loop that will iterate through all list
   while (current != NULL) {
 
-    // pointer next, then points to next element of the current element,
-    // therefore there is no link anymore
+    // pointer next, then points to next element of the current element, therefore there is no link anymore
     next = current->next;
 
     // freeing the current keyword
@@ -50,8 +49,7 @@ void free_query_list(QueryList *query_list) {
   free(query_list);
 }
 
-// This function is to add another element inserted by the user to the linked
-// list
+// This function is to add another element inserted by the user to the linked list
 void add_keyword(QueryList *query_list, const char *keyword, QueryType type) {
 
   // allocate memory for the new query node
@@ -76,11 +74,10 @@ void add_keyword(QueryList *query_list, const char *keyword, QueryType type) {
     return;
   }
 
-  // when allocated memory for keyword, then copy keyword string into allocated
-  // memory
+  // when allocated memory for keyword, then copy keyword string into allocated memory
   strcpy(new_node->keyword, keyword);
 
-  new_node->type = type; // cambiar!!!!!!!!!!
+  new_node->type = type;
 
   // pointer of new node set to null since it is last element in list
   new_node->next = NULL;
@@ -95,8 +92,7 @@ void add_keyword(QueryList *query_list, const char *keyword, QueryType type) {
     while (current->next != NULL) {
       current = current->next;
     }
-    // When at the ned of the list, the last element next pointer, will point to
-    // the element to append
+    // When at the ned of the list, the last element next pointer, will point to the element to append
     current->next = new_node;
   }
 }
@@ -120,8 +116,7 @@ QueryList *parse_query(const char *input) {
         if (buffer[0] == '!') {
           type = OR;
           memmove(buffer, buffer + 1, strlen(buffer)); // remove '!'
-        } else if (buffer[0] == '-') { // TO HANDLE EXCLUDED KEYWORDS (** Allow
-                                       // excluding keywords)
+        } else if (buffer[0] == '-') { // TO HANDLE EXCLUDED KEYWORDS (** Allow excluding keywords)
           type = EXCLUDE;
           memmove(buffer, buffer + 1, strlen(buffer)); // Remove '-'
         }
@@ -142,8 +137,7 @@ QueryList *parse_query(const char *input) {
 void print_query_list(const QueryList *list) {
   QueryNode *current = list->head;
   while (current) {
-    printf("[%s | %d] -> ", current->keyword,
-           current->type); // hay que mirar lo de type
+    printf("[%s | %d] -> ", current->keyword, current->type);
     current = current->next;
   }
   printf("NULL\n");
@@ -162,25 +156,21 @@ void init_queue_query(QueueQueries *queue) {
 
 // This is a function to enqueue the queries, overwriting the oldest query
 void enqueue_queries(QueueQueries *queue, const char *keyword) {
-
-  // move the rear pointer in a ciruclar way, so that it does not exceeds the
-  // max size of queue
+  // move the rear pointer in a ciruclar way, so that it does not exceeds the max size of queue
   queue->rear = (queue->rear + 1) % QUEUE_SIZE;
 
-  // move front pointer if queue is full, because oldest query is at front
-  // position
+  // move front pointer if queue is full, because oldest query is at front position
   if (queue->amount_current_elements == QUEUE_SIZE) {
 
-    // freeing memory of keyword that is going to be overwritten, it is front
-    // because it is queue (FIFO)
+    // freeing memory of keyword that is going to be overwritten, it is front because it is queue (FIFO)
     free(queue->elements[queue->front]);
 
     // seting freed space to NULL
     queue->elements[queue->front] = NULL;
 
     queue->front = (queue->front + 1) % QUEUE_SIZE;
-  } else { // for the case query is not full, the number of elements in queue is
-           // increased
+  } 
+  else { // for the case query is not full, the number of elements in queue is increased
     queue->amount_current_elements++;
   }
 
@@ -206,8 +196,7 @@ void print_last_queries(QueueQueries *queue) {
 
   for (int i = 0; i < queue->amount_current_elements; i++) {
 
-    // calculate index using front pointer and i, considering it is a ciruclar
-    // queue
+    // calculate index using front pointer and i, considering it is a ciruclar queue
     int index = (queue->front + i) % QUEUE_SIZE;
 
     printf("%s\n", queue->elements[index]);
@@ -218,8 +207,7 @@ void print_last_queries(QueueQueries *queue) {
 void free_queue_queries(QueueQueries *queue) {
   for (int i = 0; i < queue->amount_current_elements; i++) {
 
-    // calculate index using front pointer and i, considering it is a circular
-    // queue
+    // calculate index using front pointer and i, considering it is a circular queue
     int index = (queue->front + i) % QUEUE_SIZE;
 
     free(queue->elements[index]);
