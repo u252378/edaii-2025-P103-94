@@ -4,9 +4,8 @@
 
 typedef struct {
   int num_vertices;
-  float **adjacency_matrix; // adjacency matrix that will store edges weights
-                            // between vertices
-  Document **documents;     // array of pointers with pointers to each Document
+  float **adjacency_matrix; // adjacency matrix that will store edges weights between vertices
+  Document **documents; // array of pointers with pointers to each Document
 } Graph;
 
 Graph *create_graph(int N);

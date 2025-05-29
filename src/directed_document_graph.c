@@ -8,12 +8,10 @@ Graph *create_graph(int N) {
   // allocate memory for the graph
   Graph *graph = (Graph *)malloc(sizeof(Graph));
 
-  // initialise num_vertices variable to the amount passed as argument to
-  // function
+  // initialise num_vertices variable to the amount passed as argument to function
   graph->num_vertices = N;
 
-  // allocating memory for the adjacency matrix, that is an array of float
-  // pointers float is used for the weighted edges
+  // allocating memory for the adjacency matrix, that is an array of float pointers float is used for the weighted edges
   graph->adjacency_matrix = malloc(sizeof(float *) * N);
 
   // allocating memory and initialise rows of adjacency matrix
@@ -24,21 +22,18 @@ Graph *create_graph(int N) {
   // allocate memory for array of Document pointers, and initialise to NULL
   graph->documents = calloc(N, sizeof(Document *));
 
-  // then when having allocated and initialised the adjacency matrix, it is
-  // returned
+  // then when having allocated and initialised the adjacency matrix, it is returned
   return graph;
 }
 
 // function to add a vertex to the graph
 void add_vertex(Graph *graph, Document *document) {
 
-  // reallocate adjacency matrix to have one more row, this row is for the new
-  // vertex
+  // reallocate adjacency matrix to have one more row, this row is for the new vertex
   graph->adjacency_matrix = realloc(
       graph->adjacency_matrix, sizeof(float *) * (graph->num_vertices + 1));
 
-  // reallcate each row to add new column in the adjacency matrix for the new
-  // vertex
+  // reallcate each row to add new column in the adjacency matrix for the new vertex
   for (int j = 0; j < graph->num_vertices; j++) {
     graph->adjacency_matrix[j] = realloc(
         graph->adjacency_matrix[j], sizeof(float) * (graph->num_vertices + 1));
@@ -54,8 +49,7 @@ void add_vertex(Graph *graph, Document *document) {
   graph->documents =
       realloc(graph->documents, sizeof(Document *) * (graph->num_vertices + 1));
 
-  // set the appropiate position in the documents array with the document passed
-  // as argument
+  // set the appropiate position in the documents array with the document passed as argument
   graph->documents[graph->num_vertices] = document;
 
   // increse number of vertices in graph
@@ -65,8 +59,7 @@ void add_vertex(Graph *graph, Document *document) {
 // function to add a directed edge from i to j with an specific weight
 void add_edge(Graph *graph, int i, int j, float weight) {
   if (i >= 0 && i < graph->num_vertices && j >= 0 &&
-      j < graph->num_vertices) { // checking both indices of vertex are within
-                                 // valid ranges
+      j < graph->num_vertices) { // checking both indices of vertex are with valid ranges
     // set the weight of the edge from vertex i to vertex j in adjacency matrix
     graph->adjacency_matrix[i][j] = weight;
   }
@@ -118,10 +111,8 @@ void delete_vertex(Graph *graph, int i) {
 // function to delete a directed edge from i to j
 void delete_edge(Graph *graph, int i, int j) {
   if (i >= 0 && i < graph->num_vertices && j >= 0 &&
-      j < graph->num_vertices) { // checking both indices of vertex are within
-                                 // valid ranges
-    // set the weight of the edge from vettex i to vertex j to 0.0 in adjacency
-    // matrix to indicate no there is no edge
+      j < graph->num_vertices) { // checking both indices of vertex are within valid ranges
+    // set the weight of the edge from vettex i to vertex j to 0.0 in adjacency matrix to indicate no there is no edge
     graph->adjacency_matrix[i][j] = 0.0;
   }
 }
@@ -146,8 +137,7 @@ void delete_graph(Graph *graph) {
 
 // function to set a document at a vertex
 void set_vertex(Graph *graph, int i, Document *document) {
-  if (i >= 0 && i < graph->num_vertices) { // checking index i is a valid index
-    // set new document at index i in array of documents
+  if (i >= 0 && i < graph->num_vertices) { // checking index i is a valid index set new document at index i in array of documents
     graph->documents[i] = document;
   }
 }
@@ -155,21 +145,18 @@ void set_vertex(Graph *graph, int i, Document *document) {
 // function to set the weight of the edge from vertex i to vertex j
 void set_edge(Graph *graph, int i, int j, float weight) {
   if (i >= 0 && i < graph->num_vertices && j >= 0 &&
-      j < graph->num_vertices) { // checking indices i and j are valid indices
-    // set new weight of edge from vertex i to vertex j
+      j < graph->num_vertices) { // checking indices i and j are valid indices set new weight of edge from vertex i to vertex j
     graph->adjacency_matrix[i][j] = weight;
   }
 }
 
-// function to print each vertex index and the document id of document assigned
-// to the vertex
+// function to print each vertex index and the document id of document assigned to the vertex
 void list_vertex(Graph *graph) {
   printf("The vertices of the graph are:\n");
 
   // iterate through each vertex index of graph
   for (int i = 0; i < graph->num_vertices; i++) {
-    if (graph->documents[i] != NULL) { // checking if there is a document at
-                                       // index i in the array of documents
+    if (graph->documents[i] != NULL) { // checking if there is a document at index i in the array of documents
       printf("vertex %d has document: %d\n", i, graph->documents[i]->doc_id);
     }
   }
