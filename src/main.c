@@ -33,13 +33,20 @@ void show_full_document(Document *doc) {
     printf("ID: %d\nTitle: %s\n", doc->doc_id, doc->title);
     printf("Relevance: %.2f\n", doc->relevance);
     printf("---------------------------------\n");
-    printf("%s\n", doc->body); // Muestra todo el contenido
-    if (doc->links && doc->links[0] != '\0') {
-        printf("Links: %s\n", doc->links);
+    printf("%s\n", doc->body);
+    
+    // Mostrar links
+    if (doc->links) {
+        printf("Links:\n");
+        Link *current = doc->links;
+        while (current != NULL) {
+            printf("- Documento ID: %d\n", current->id);
+            current = current->next;
+        }
     }
+    
     printf("=================================\n");
-    printf("Press Enter to continue...");
-    while (getchar() != '\n'); // Espera Enter
+    // Se eliminó completamente la línea de "Press Enter to continue..."
 }
 void select_document(DocumentsList *results) {
     if (!results || !results->head) {
