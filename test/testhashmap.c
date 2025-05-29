@@ -25,7 +25,7 @@ void test_getFromHashMap() { // tests if get in the hashmap works correctly
   free(doc);                              // free the document itself
   freeHashMap(map); // free the entire hashmap (like deleting the phone book)
 
-  int main() {
+  int mainhashmap() {
     test_getFromHashMap(); // run the test
     return 0;              // tell the computer everything worked
   }

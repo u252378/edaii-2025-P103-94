@@ -171,7 +171,7 @@ int collision_chain() {
   return 1;
 }
 
-int main() {
+int mainu() {
   int result = 0;
   result += insert_retrive_into_from_hashmap();
   result += overwrite_key_hashmap();

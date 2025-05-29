@@ -2,7 +2,7 @@
 #include "utils.h"
 #include <stdio.h>
 
-int main() {
+int maintest() {
   {
     // Call all test modules you want to run here
     sample_lib_test();
