@@ -124,25 +124,17 @@ void reverseIndexFree(ReverseIndex *index, bool freeLists, bool freeDocs) {
   free(index);
 }
     
-// Normalise words in the parser (uppercase, puncation, etc.)
+//**normalize words in the parser (uppercase, punctuation, etc.) [LAB 3]:
 //fuction to convert all words to lowercase,and also to only accept letters, and store the final word in the same place
-void normalise_word(char *keyword) {
-    int i = 0, j = 0;
-    while (keyword[i]) {
-        // Conserva solo letras (a-z, A-Z)
-        if ((keyword[i] >= 'a' && keyword[i] <= 'z') || 
-            (keyword[i] >= 'A' && keyword[i] <= 'Z')) {
-            
-            // Convertir a minúsculas manualmente
-            if (keyword[i] >= 'A' && keyword[i] <= 'Z') {
-                keyword[j++] = keyword[i] + ('a' - 'A');  // Conversión a minúscula
-            } else {
-                keyword[j++] = keyword[i];  // Ya está en minúscula
-            }
-        }
-        i++;
+void normalize_keyword(char *word) {
+  int i = 0, j = 0;
+  while (word[i]) {
+    if (isalpha((unsigned char)word[i])) {
+      word[j++] = tolower((unsigned char)word[i]); //if it is in uppercase change it to lowercase
     }
-    keyword[j] = '\0';
+    i++; //move to the next char
+  }
+  word[j] = '\0'; //null terminate the clean word
 }
 
 void reverseIndexDocument(ReverseIndex *reverse_index, Document *document) {
@@ -155,7 +147,7 @@ void reverseIndexDocument(ReverseIndex *reverse_index, Document *document) {
 
   char *token = strtok(text, " \t\n\r.,;:!?()[]{}<>\""); //split by whitespace and punctuation
   while (token != NULL) {
-    normalise_word(token); //clean token 
+    normalize_keyword(token); //clean token 
 
     if (token[0] != '\0') { //skip empty results
       DocumentsListNode *list = malloc(sizeof(DocumentsListNode));

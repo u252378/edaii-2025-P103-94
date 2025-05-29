@@ -6,18 +6,6 @@
 #include <stdlib.h>
 #include <ctype.h> //for tolower()
 
-//**normalize words in the parser (uppercase, punctuation, etc.) [LAB 3]:
-void normalize_keyword(char *word) {
-    int i = 0, j = 0;
-    while (word[i]) {
-        if (isalpha(word[i])) {
-            word[j++] = tolower(word[i]); //if it is in uppercase change it to lowercase
-        }
-        i++; //move to the next char
-    }
-    word[j] = '\0'; //null terminate the clean word
-}
-
 //function to remove duplicate results in case there is any:
 void remove_duplicate_results(DocumentsList *results) {
     if (!results || !results->head) return; //if the list is empty do nothing 

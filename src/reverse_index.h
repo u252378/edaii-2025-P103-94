@@ -29,11 +29,10 @@ DocumentsList *reverseIndexGet(
     char *word); // get the list of documents that contain the given word
 
 void reverseIndexFree(ReverseIndex *index, bool freeLists, bool freeDocs);
-void normalise_word(char *word);
+void normalize_keyword(char *word);
 void reverseIndexDocument(ReverseIndex *reverse_index,Document *document); // tokenize a document and add all its words to the index
 void reverseIndexSaveToFile(ReverseIndex *reverse_index,const char *filename); // saves the reverse index to a file
-void reverseIndexLoadFromFile(ReverseIndex *reverse_index, const char *filename, Document *(*getDocByTitle)(const char *)); file into an existing index
-ReverseIndex *build_reverse_index(Document *docs);
+void reverseIndexLoadFromFile(ReverseIndex *reverse_index, const char *filename, Document *(*getDocByTitle)(const char *));
 void print_reverse_index(const ReverseIndex *index);
 
 #endif
