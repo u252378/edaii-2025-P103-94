@@ -4,10 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-int contains_substring(const char *text,
-                       const char *keyword) { // function to search if the body
-                                              // contains a substring
-  return strstr(text, keyword) != NULL; // found
+int contains_substring(const char *text, const char *keyword) { // function to search if the body contains a substring
+  return strstr(text, keyword) != NULL; //found
 }
 
 int main2(int argc, char **argv) {
