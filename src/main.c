@@ -76,39 +76,39 @@ int main(int argc, char **argv) {
             free_documents(docs);
             return 0;
         }
-        DocumentsList *results = reverseIndexGet(reverse_index, keyword);
-        if (!results || !results->head) {
+        DocumentsList *results = reverseIndexGet(reverse_index, keyword); //search for documents that contain our desired keywords
+        if (!results || !results->head) { //if the word is not in any doc then print the following:
             printf("No documents contain the word '%s'.\n", keyword);
-        } else {
-            remove_duplicate_results(results); // Eliminar duplicados
-            
+        } 
+        else {
+            remove_duplicate_results(results); //this will remove any duplicates in case there is any
+    
             printf("\nDocuments containing '%s' (sorted by relevance):\n", keyword);
             DocumentsListNode *node = results->head;
             while (node) {
                 if (node->document) {
                     printf("- %s (ID: %d, Relevance: %.2f)\n", 
-                           node->document->title, 
-                           node->document->doc_id,
-                           node->document->relevance);
+                    node->document->title, 
+                    node->document->doc_id,
+                    node->document->relevance);
                 }
-                node = node->next;
+                node = node->next; //move to the next node  
             }
         }
-    } while (1);
+    } while (1); //we did this in order for our code to repeat unless user types "exit"
 
-    // --- PARTE ORIGINAL (todo lo que ya tenías) ---
     printf("\n=== All documents ===\n");
     Document *current = docs;
     while (current) {
-        print_document_details(current);  // Imprime ID, título, cuerpo y enlaces
+        print_document_details(current);  //prints ID, title, body and links
         current = current->next;
     }
 
     printf("\n=== Documents sorted by relevance ===\n");
     docs = sort_documents_by_relevance(docs);
-    print_sorted_documents(docs);  // Imprime títulos y relevancia
+    print_sorted_documents(docs); //prints title and relevance score   
 
-    // Liberar memoria
+    //free memory before exiting program
     free_reverse_index(reverse_index);
     free_documents(docs);
     return 0;
