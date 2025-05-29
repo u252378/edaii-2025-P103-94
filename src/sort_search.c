@@ -6,21 +6,23 @@ float calculate_relevance(Document *doc) {
     
     float relevance = 0.0f;
     
-    // 1. Peso por contenido (longitud del cuerpo)
+    // 1. Peso por longitud del cuerpo (50%)
     if (doc->body) {
-        relevance += strlen(doc->body) / 5000.0f; // Normalizado
+        relevance += strlen(doc->body) / 2000.0f; // +1.0 por cada 2000 caracteres
     }
     
-    // 2. Peso por links salientes (únicos)
+    // 2. Peso por links salientes (30%)
     Link *link = doc->links;
     int unique_links = 0;
     while (link) {
-        unique_links++;
+        if (link->id != doc->doc_id) { // Ignorar autoreferencias
+            unique_links++;
+        }
         link = link->next;
     }
-    relevance += unique_links * 0.2f;
+    relevance += unique_links * 0.3f;
     
-    // 3. Peso por título (documentos con título más largo)
+    // 3. Peso por título (20%)
     if (doc->title) {
         relevance += strlen(doc->title) * 0.05f;
     }
