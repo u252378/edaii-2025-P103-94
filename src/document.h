@@ -39,7 +39,7 @@ typedef struct DocumentsList {
 } DocumentsList;
 
 // FUNCTION DECLARATIONS:
-Document *document_desserialize(char *path);
+Document *document_desserialize(FILE *file);
 Document *load_documents_from_folder(const char *folder_path);
 void print_document_details(const Document *doc);
 void print_documents(const Document *head);
