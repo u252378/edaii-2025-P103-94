@@ -2,7 +2,9 @@
 #define SORT_SEARCH_H
 #include "document.h"
 
-Document* sort_documents_by_relevance(Document* head);
-void print_sorted_documents(const Document* head);
-
+Document *sort_documents_by_relevance(Document *head);
+void print_sorted_documents(const Document *head);
+// Añade estas líneas al final del archivo
+float calculate_relevance(Document *doc);
+void sort_documents_list(DocumentsListNode **headRef);
 #endif

@@ -1,38 +1,115 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "document.h"
 #include "query.h"
 #include "reverse_index.h"
 #include "sort_search.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h> // Para tolower()
 
-int main(int argc, char** argv) {
-    //we check if the user provided the dataset folder path as a command-line argument:
+// Normaliza una palabra (minúsculas, sin puntuación)
+void normalize_keyword(char *word) {
+    int i = 0, j = 0;
+    while (word[i]) {
+        if (isalpha(word[i])) {
+            word[j++] = tolower(word[i]);
+        }
+        i++;
+    }
+    word[j] = '\0';
+}
+void remove_duplicate_results(DocumentsList *results) {
+    if (!results || !results->head) return;
+    
+    DocumentsListNode *current = results->head;
+    while (current) {
+        DocumentsListNode *runner = current;
+        while (runner->next) {
+            if (runner->next->document->doc_id == current->document->doc_id) {
+                DocumentsListNode *temp = runner->next;
+                runner->next = runner->next->next;
+                free(temp);
+            } else {
+                runner = runner->next;
+            }
+        }
+        current = current->next;
+    }
+}
+int main(int argc, char **argv) {
+    // Verificación de argumentos
     if (argc < 2) {
-        //if that is not the case, we will print the usage instructions and exit.
         printf("Usage: %s <dataset_folder>\n", argv[0]);
-        return 1; //EXIT wih error.
+        return 1;
     }
 
-    //now, this loads all documents from the specified folder path:
-    Document* docs = load_documents_from_folder(argv[1]);
-    ReverseIndex *index = reverseIndexInit(1000); // or another appropriate slot count
-    build_reverse_index(index, docs); // assuming this is your function to populate it
-
-    //check if loading failed or no documents were found, we will notify the user and exit.
+    // Carga de documentos
+    Document *docs = load_documents_from_folder(argv[1]);
     if (!docs) {
         printf("No documents found or failed to load.\n");
-        return 1; //EXIT wih error.
+        return 1;
     }
-    print_reverse_index(index);  
-    free_reverse_index(index);  // frre memory
-    //start traversing the linked list of loaded documents:
-    Document* current = docs;
+ Document *doc_current = docs;  // Cambiamos el nombre a doc_current
+    while (doc_current) {
+        doc_current->relevance = calculate_relevance(doc_current);
+        doc_current = doc_current->next;
+    }
+    // Construcción del índice inverso
+    ReverseIndex *reverse_index = build_reverse_index(docs);
+    if (!reverse_index) {
+        printf("Failed to build reverse index.\n");
+        free_documents(docs);
+        return 1;
+    }
+
+   // Búsqueda interactiva mejorada
+    char keyword[100];
+    do {
+        printf("\nEnter a word to search (or type 'exit' to finish): ");
+        scanf("%99s", keyword);
+        normalize_keyword(keyword);
+
+        if (strcmp(keyword, "exit") == 0) {
+    // Liberar memoria antes de salir
+    free_reverse_index(reverse_index);
+    free_documents(docs);
+    return 0;
+}
+
+
+        DocumentsList *results = reverseIndexGet(reverse_index, keyword);
+        if (!results || !results->head) {
+            printf("No documents contain the word '%s'.\n", keyword);
+        } else {
+            remove_duplicate_results(results); // Eliminar duplicados
+            
+            printf("\nDocuments containing '%s' (sorted by relevance):\n", keyword);
+            DocumentsListNode *node = results->head;
+            while (node) {
+                if (node->document) {
+                    printf("- %s (ID: %d, Relevance: %.2f)\n", 
+                           node->document->title, 
+                           node->document->doc_id,
+                           node->document->relevance);
+                }
+                node = node->next;
+            }
+        }
+    } while (1);
+
+    // --- PARTE ORIGINAL (todo lo que ya tenías) ---
+    printf("\n=== All documents ===\n");
+    Document *current = docs;
     while (current) {
-        print_document_details(current); //this will print the details of the current document (ID, title, body, and links)
-        current = current->next; //to move to the next document in the linked list,
+        print_document_details(current);  // Imprime ID, título, cuerpo y enlaces
+        current = current->next;
     }
-   docs = sort_documents_by_relevance(docs); // sorts the documents
-   print_sorted_documents(docs);             // prints sorted documents
-   free_documents(docs); //when finished, we have to free all the memory allocated for the document list.
-   return 0;
+
+    printf("\n=== Documents sorted by relevance ===\n");
+    docs = sort_documents_by_relevance(docs);
+    print_sorted_documents(docs);  // Imprime títulos y relevancia
+
+    // Liberar memoria
+    free_reverse_index(reverse_index);
+    free_documents(docs);
+    return 0;
 }
