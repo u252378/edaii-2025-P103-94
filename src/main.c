@@ -126,7 +126,7 @@ int main(int argc, char **argv) {
                 if (!results || !results->head) {
             printf("No documents contain the word '%s'.\n", keyword);
         } else {
-            enqueue_query(&recent_queries, keyword);
+            enqueue_queries(&recent_queries, keyword);
             remove_duplicate_results(results);
 
             // Convert results to Document* linked list
