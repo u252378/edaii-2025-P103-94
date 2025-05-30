@@ -120,10 +120,11 @@ int main(int argc, char **argv) {
             //free memory and exit
             free_reverse_index(reverse_index);
             free_documents(docs);
+            free_queue_queries(&recent_queries);
             return 0;
         }
         DocumentsList *results = reverseIndexGet(reverse_index, keyword); //search for documents that contain our desired keywords
-                if (!results || !results->head) {
+        if (!results || !results->head) {
             printf("No documents contain the word '%s'.\n", keyword);
         } else {
             enqueue_query(&recent_queries, keyword);
@@ -216,6 +217,8 @@ int main(int argc, char **argv) {
             }
             printf("********************************\n");
         }
+
+    } while (1);
 
     printf("\n=== All documents ===\n");
     Document *current = docs;

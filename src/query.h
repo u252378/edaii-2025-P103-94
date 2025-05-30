@@ -10,16 +10,28 @@ typedef struct QueryNode {
   struct QueryNode *next;
 } QueryNode;
 
-// Query linked list structure
+// Query list structure
 typedef struct {
   QueryNode *head;
 } QueryList;
 
-// Query list functions:
+// Recent queries queue (circular buffer)
+typedef struct {
+  char *queries[3];  // Stores up to 3 recent queries
+  int start;         // Index of oldest query
+  int size;          // Current number of queries (0-3)
+} QueueQueries;
+
+// Query list functions
 QueryList *create_query_list(void);
 void free_query_list(QueryList *list);
 void add_keyword(QueryList *query_list, const char *keyword, QueryType type);
 QueryList *parse_query(const char *input);
-void print_query_list(const QueryList *list);  // For debugging
+void print_query_list(const QueryList *list);
+
+// Queue functions (for recent searches)
+void init_queue_query(QueueQueries *queue);
+void enqueue_query(QueueQueries *queue, const char *keyword);
+void free_queue_queries(QueueQueries *queue);
 
 #endif
