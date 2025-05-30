@@ -2,7 +2,6 @@
 #include "query.h"
 #include "reverse_index.h"
 #include "sort_search.h"
-#include "record_search.h"  // Added for search history functionality
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h> //for tolower()
