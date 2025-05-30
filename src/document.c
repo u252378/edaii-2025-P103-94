@@ -1,4 +1,3 @@
-// in this file we will create the functions: document_desserialize and load_documents_from_folder
 #include "document.h"
 #include <assert.h> //provides macros for adding diagnostics (used during debugging).
 #include <dirent.h> //to handle directory operations like opendir, readdir, closedir.
@@ -109,6 +108,42 @@ void print_document_details(const Document *doc) {
     printf("  -> Document ID %d\n", link->id); //print each link's ID.
     link = link->next; //move to the next link in the list.
   }
+}
+
+// Print document in compact format with all metadata
+void print_document_compact(const Document *doc) {
+    if (!doc) return; //safety check
+    
+    // Print ID section with proper formatting
+    printf("ID\n%d\n", doc->doc_id);
+    
+    // Print TITLE section with proper formatting
+    printf("TITLE\n%s\n", doc->title);
+    
+    // Print RELEVANCE SCORE section with proper formatting
+    printf("RELEVANCE SCORE\n%.0f\n", doc->relevance);
+    
+    // Print BODY section header and content
+    printf("BODY\n");
+    if (doc->body) {
+        const char *body = doc->body;
+        while (*body) {
+            putchar(*body); //print each character preserving original formatting
+            body++;
+        }
+    }
+    
+    // Print links if they exist in [link](id) format
+    if (doc->links) {
+        const Link *link = doc->links;
+        while (link) {
+            printf("[link](%d)\n", link->id);
+            link = link->next;
+        }
+    }
+    
+    // Print the footer line
+    printf("-----------------------------\n");
 }
 
 //free all allocated memory for a list of documents:

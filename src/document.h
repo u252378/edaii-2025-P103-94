@@ -1,4 +1,3 @@
-// in this file we will create the data structures of lab 1:
 #ifndef DOCUMENT_H
 #define DOCUMENT_H
 #include <assert.h>
@@ -42,6 +41,7 @@ typedef struct DocumentsList {
 Document *document_desserialize(FILE *file);
 Document *load_documents_from_folder(char *folder_path);
 void print_document_details(const Document *doc);
+void print_document_compact(const Document *doc); // NEW FUNCTION
 void print_documents(const Document *head);
 void free_document(Document *doc);
 void free_documents(Document *head);

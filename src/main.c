@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h> //for tolower()
-#include <string.h> // Added for strlen()
+#include <string.h> //for strlen()
 
 //function to remove duplicate results in case there is any:
 void remove_duplicate_results(DocumentsList *results) {
@@ -50,40 +50,6 @@ void show_full_document(Document *doc) {
     printf("=================================\n");
 }
 
-//function to let user select a document from a list and view its full content:
-void select_document(DocumentsList *results) {
-    if (!results || !results->head) { //if the result list is NULL or empty, print a message and return
-        printf("No documents available.\n");
-        return;
-    }
-
-    //show numbered list
-    printf("\nSearch results:\n");
-    //traverse the results list and print numbered titles with their document IDs
-    DocumentsListNode *node = results->head;
-    int count = 1;
-    while (node) {
-        printf("%d. %s (ID: %d)\n", count++, node->document->title, node->document->doc_id); //print each document's number, title, and ID
-        node = node->next; //move to the next doc
-    }
-
-    int choice;
-    printf("\nEnter document number to view (0 to cancel): ");
-    //read the user's choice and validate input type
-    if (scanf("%d", &choice) != 1) {
-        while (getchar() != '\n'); //clear input buffer
-        return;
-    }
-    while (getchar() != '\n'); //clear the newline
-
-    //if the input is a valid choice (within range)
-    if (choice > 0 && choice < count) {
-        node = results->head;
-        for (int i = 1; i < choice; i++) node = node->next; //traverse the list to the selected document
-        show_full_document(node->document); //show the full document details
-    }
-}
-
 int main(int argc, char **argv) {
     //check if dataset folder path is provided:
     if (argc < 2) {
@@ -114,9 +80,9 @@ int main(int argc, char **argv) {
     QueueQueries recent_queries;
     init_queue_query(&recent_queries);
     do {
-        printf("\nSearch: "); // Changed to simple search prompt
+        printf("\nSearch: "); //ASK THE USER FOR A SEARCH TERM
         scanf("%99s", keyword); //reads user input
-        normalize_keyword(keyword); //call the function to normalize the word entered
+        normalize_keyword(keyword); //normalize the word entered
         if (strcmp(keyword, "exit") == 0) {
             //free memory and exit
             free_reverse_index(reverse_index);
@@ -137,7 +103,7 @@ int main(int argc, char **argv) {
         }
         printf("********************************\n");
 
-        DocumentsList *results = reverseIndexGet(reverse_index, keyword); //search for documents that contain our desired keywords
+        DocumentsList *results = reverseIndexGet(reverse_index, keyword);
         if (!results || !results->head) {
             printf("No documents contain the word '%s'.\n", keyword);
             continue;
@@ -217,20 +183,7 @@ int main(int argc, char **argv) {
         }
 
         if (curr && count == selection) {
-            printf("\nID\n%d\n", curr->doc_id);
-            printf("TITLE\n%s\n", curr->title);
-            printf("RELEVANCE SCORE\n%.0f\n", curr->relevance);
-            printf("BODY\n%s", curr->body);
-            
-            // Display document links if they exist
-            if (curr->links) {
-                Link *link = curr->links;
-                while (link) {
-                    printf("[link](%d)\n", link->id);
-                    link = link->next;
-                }
-            }
-            printf("-----------------------------\n");
+            print_document_compact(curr); // Use the new standardized print function
         }
 
     } while (1);
