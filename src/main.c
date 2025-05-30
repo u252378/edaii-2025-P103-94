@@ -2,6 +2,7 @@
 #include "query.h"
 #include "reverse_index.h"
 #include "sort_search.h"
+#include "record_search.h"  // Added for search history functionality
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h> //for tolower()
@@ -89,44 +90,50 @@ int main(int argc, char **argv) {
         printf("Usage: %s <dataset_folder>\n", argv[0]);
         return 1;
     }
+
     //load all docs from the folder
     Document *docs = load_documents_from_folder(argv[1]);
     if (!docs) {
         printf("No documents found or failed to load.\n");
         return 1; //EXIT with error if loading fails
     }
+
+    // Initialize search history queue
+    SearchQueue *search_history = createSearchQueue(); // Creates empty search history
+
     Document *doc_current = docs; //now, we compute the relevance score for each doc
     while (doc_current) {
         doc_current->relevance = calculate_relevance(doc_current);
         doc_current = doc_current->next;
     }
+
     //build the reverse index for fast keyword lookups
     ReverseIndex *reverse_index = build_reverse_index(docs);
     if (!reverse_index) {
         printf("Failed to build reverse index.\n");
         free_documents(docs);
+        freeSearchQueue(search_history); // Clean up search history
         return 1;
     }
 
-   //interactive search (MAIN FEATURE OF OUR PROGRAM)
+    //interactive search (MAIN FEATURE OF OUR PROGRAM)
     char keyword[100];
-    QueueQueries recent_queries;
-    init_queue_query(&recent_queries);
     do {
         printf("\nHELLO! Welcome to our program, please enter a word/words that you want to look for (or type 'exit' to finish): "); //ASK THE USER FOR A WORD/WORDS
         scanf("%99s", keyword); //reads user input
         normalize_keyword(keyword); //call the function to normalize the word entered
+        
         if (strcmp(keyword, "exit") == 0) {
-            //free memory and exit
-            free_reverse_index(reverse_index);
-            free_documents(docs);
-            return 0;
+            break; // Exit the search loop
         }
+
+        // Add search term to history (automatically maintains 3-item limit)
+        createSearchingNode(search_history, keyword);
+
         DocumentsList *results = reverseIndexGet(reverse_index, keyword); //search for documents that contain our desired keywords
-                if (!results || !results->head) {
+        if (!results || !results->head) {
             printf("No documents contain the word '%s'.\n", keyword);
         } else {
-            enqueue_queries(&recent_queries, keyword);
             remove_duplicate_results(results);
 
             // Convert results to Document* linked list
@@ -207,16 +214,13 @@ int main(int argc, char **argv) {
                 printf("-----------------------------\n");
             }
 
-            // Show recent searches (most recent at bottom)
-            printf("******* recent searches ********\n");
-            for (int i = 0; i < 3; ++i) {
-                int index = (recent_queries.start + i) % 3;
-                if (recent_queries.size > i)
-                    printf("* %s *\n", recent_queries.queries[index]);
-            }
-            printf("********************************\n");
+            // Show recent searches using the new implementation
+            print_record_search(search_history);
         }
 
+    } while (1); // Infinite loop until 'exit' is entered
+
+    // Print all documents (for debugging/verification)
     printf("\n=== All documents ===\n");
     Document *current = docs;
     while (current) {
@@ -231,6 +235,6 @@ int main(int argc, char **argv) {
     //free memory before exiting program
     free_reverse_index(reverse_index);
     free_documents(docs);
-    free_queue_queries(&recent_queries);
+    freeSearchQueue(search_history); // Free the search history queue
     return 0;
 }
