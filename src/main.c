@@ -123,16 +123,99 @@ int main(int argc, char **argv) {
             return 0;
         }
         DocumentsList *results = reverseIndexGet(reverse_index, keyword); //search for documents that contain our desired keywords
-        if (!results || !results->head) { //if the word is not in any doc then print the following:
+                if (!results || !results->head) {
             printf("No documents contain the word '%s'.\n", keyword);
-        } 
-        else {
-            remove_duplicate_results(results); //this will remove any duplicates in case there is any
-      select_document(results); 
-    remove_duplicate_results(results);
-    
+        } else {
+            enqueue_query(&recent_queries, keyword);
+            remove_duplicate_results(results);
+
+            // Convert results to Document* linked list
+            Document *temp_head = NULL;
+            DocumentsListNode *node = results->head;
+            while (node) {
+                node->document->next = temp_head;
+                temp_head = node->document;
+                node = node->next;
+            }
+
+            // Sort by relevance
+            temp_head = sort_documents_by_relevance(temp_head);
+
+            // Print top 5 formatted
+            printf("\n");
+            Document *curr = temp_head;
+            int index = 0, total_results = 0;
+
+            while (curr && index < 5) {
+                printf("(%d) %s\n", index, curr->title);
+                printf("---\n");
+
+                // Print a short snippet of the body (first 2-3 lines)
+                const char *body = curr->body;
+                int lines_printed = 0;
+                while (*body && lines_printed < 3) {
+                    putchar(*body);
+                    if (*body == '\n') lines_printed++;
+                    body++;
+                }
+                if (*body) printf("...\n"); // body is truncated
+                printf("---\n");
+                printf("relevance score: %.0f\n", curr->relevance);
+                curr = curr->next;
+                index++;
+            }
+
+            // Count total results
+            curr = temp_head;
+            while (curr) {
+                total_results++;
+                curr = curr->next;
+            }
+
+            printf("[%d results]\n", total_results);
+            printf("-----------------------------\n");
+
+            // Ask user to select document
+            int selection;
+            printf("Select document: ");
+            if (scanf("%d", &selection) != 1) {
+                while (getchar() != '\n'); // clean input
+                continue;
+            }
+            while (getchar() != '\n');
+
+            // Navigate to the selected document
+            curr = temp_head;
+            int count = 0;
+            while (curr && count < selection) {
+                curr = curr->next;
+                count++;
+            }
+
+            if (curr && count == selection) {
+                printf("ID\n%d\n", curr->doc_id);
+                printf("TITLE\n%s\n", curr->title);
+                printf("RELEVANCE SCORE\n%.0f\n", curr->relevance);
+                printf("BODY\n%s", curr->body);
+                if (curr->links) {
+                    Link *link = curr->links;
+                    while (link) {
+                        printf("[link](%d)\n", link->id);
+                        link = link->next;
+                    }
+                }
+                printf("-----------------------------\n");
+            }
+
+            // Show recent searches (most recent at bottom)
+            printf("******* recent searches ********\n");
+            for (int i = 0; i < 3; ++i) {
+                int index = (recent_queries.start + i) % 3;
+                if (recent_queries.size > i)
+                    printf("* %s *\n", recent_queries.queries[index]);
+            }
+            printf("********************************\n");
         }
-    } while (1); //we did this in order for our code to repeat unless user types "exit"
 
     printf("\n=== All documents ===\n");
     Document *current = docs;
