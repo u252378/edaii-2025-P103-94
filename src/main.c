@@ -110,6 +110,8 @@ int main(int argc, char **argv) {
 
    //interactive search (MAIN FEATURE OF OUR PROGRAM)
     char keyword[100];
+    QueueQueries recent_queries;
+    init_queue_query(&recent_queries);
     do {
         printf("\nHELLO! Welcome to our program, please enter a word/words that you want to look for (or type 'exit' to finish): "); //ASK THE USER FOR A WORD/WORDS
         scanf("%99s", keyword); //reads user input
@@ -146,5 +148,6 @@ int main(int argc, char **argv) {
     //free memory before exiting program
     free_reverse_index(reverse_index);
     free_documents(docs);
+    free_queue_queries(&recent_queries);
     return 0;
 }
