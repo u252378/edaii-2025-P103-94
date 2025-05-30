@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
     QueueQueries recent_queries;
     init_queue_query(&recent_queries);
     do {
-        printf("\nSearch: "); //ASK THE USER FOR A SEARCH TERM
+        printf("\nHELLO! Welcome to our program, please enter a word/words that you want to look for (or type 'exit' to finish): "); //ASK THE USER FOR A SEARCH TERM
         scanf("%99s", keyword); //reads user input
         normalize_keyword(keyword); //normalize the word entered
         if (strcmp(keyword, "exit") == 0) {
