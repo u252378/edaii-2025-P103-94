@@ -6,10 +6,8 @@
 // hash function for strings:
 unsigned int hash(const char *key, int size) {
   unsigned int hashValue = 0;
-  for (int i = 0; key[i] != '\0';
-       i++) { // loops through each character of the string
-    hashValue = hashValue * 31 +
-                key[i]; // common practice: multiply by a prime and add the char
+  for (int i = 0; key[i] != '\0';i++) { // loops through each character of the string
+    hashValue = hashValue * 31 +key[i]; // common practice: multiply by a prime and add the char
   }
   return hashValue % size; // return index within the table size
 }

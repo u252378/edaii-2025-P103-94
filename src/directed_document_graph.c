@@ -33,7 +33,7 @@ void add_vertex(Graph *graph, Document *document) {
   graph->adjacency_matrix = realloc(
       graph->adjacency_matrix, sizeof(float *) * (graph->num_vertices + 1));
 
-  // reallcate each row to add new column in the adjacency matrix for the new vertex
+  // reallocate each row to add new column in the adjacency matrix for the new vertex
   for (int j = 0; j < graph->num_vertices; j++) {
     graph->adjacency_matrix[j] = realloc(
         graph->adjacency_matrix[j], sizeof(float) * (graph->num_vertices + 1));
@@ -42,8 +42,7 @@ void add_vertex(Graph *graph, Document *document) {
   }
 
   // allocate a new row for the new vertex and initialise the row with 0.0
-  graph->adjacency_matrix[graph->num_vertices] =
-      calloc(graph->num_vertices + 1, sizeof(float));
+  graph->adjacency_matrix[graph->num_vertices] =calloc(graph->num_vertices + 1, sizeof(float));
 
   // reallocate array of documents to have another Document pointer
   graph->documents =
@@ -112,7 +111,7 @@ void delete_vertex(Graph *graph, int i) {
 void delete_edge(Graph *graph, int i, int j) {
   if (i >= 0 && i < graph->num_vertices && j >= 0 &&
       j < graph->num_vertices) { // checking both indices of vertex are within valid ranges
-    // set the weight of the edge from vettex i to vertex j to 0.0 in adjacency matrix to indicate no there is no edge
+    // set the weight of the edge from vertex i to vertex j to 0.0 in adjacency matrix to indicate no there is no edge
     graph->adjacency_matrix[i][j] = 0.0;
   }
 }

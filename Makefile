@@ -6,13 +6,11 @@ compile:
 r: compile
 	./main.out $(DATASET)
 
-# Luego puedes ejecutar:
-# make r DATASET=datasets/wikipedia270
-# make r DATASET=datasets/wikipedia540
 
-v: 
+v:
 	make compile
-	valgrind --leak-check=yes ./main.out
+	valgrind --leak-check=yes ./main.out $(DATASET)
+
 
 compiledebug:
 	gcc src/main.c $(SRC_FILES) -g -o main.out

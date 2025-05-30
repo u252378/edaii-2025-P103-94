@@ -1,6 +1,5 @@
 #ifndef HASHMAP_H // prevents multiple inclusions of this header file
 #define HASHMAP_H // marks the beginning of the header definition
-
 #include "document.h"
 
 // first, we will define a structure of the node in the hash map's linked list (which we will use for separate chaining)
