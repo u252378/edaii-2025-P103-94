@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h> //for tolower()
+#include <string.h> // Added for strlen()
 
 //function to remove duplicate results in case there is any:
 void remove_duplicate_results(DocumentsList *results) {
@@ -173,16 +174,23 @@ int main(int argc, char **argv) {
             printf("(%d) %s\n", index, curr->title);
             printf("---\n");
 
-            // Print first 2-3 lines of body
-            const char *body = curr->body;
-            int lines_printed = 0;
-            while (*body && lines_printed < 3) {
-                putchar(*body);
-                if (*body == '\n') lines_printed++;
-                body++;
+            // Print first ~200 characters of body
+            if (curr->body) {
+                int max_chars = 200;
+                int chars_printed = 0;
+                const char *body_ptr = curr->body;
+                
+                while (*body_ptr && chars_printed < max_chars) {
+                    putchar(*body_ptr);
+                    body_ptr++;
+                    chars_printed++;
+                }
+                
+                if (*body_ptr) {
+                    printf("..."); // Add ellipsis if text continues
+                }
             }
-            if (*body) printf("...\n"); // Indicate truncated content
-            printf("---\n");
+            printf("\n---\n");
             printf("relevance score: %.0f\n", curr->relevance);
             
             curr = curr->next;
