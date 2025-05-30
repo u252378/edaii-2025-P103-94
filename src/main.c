@@ -114,63 +114,22 @@ int main(int argc, char **argv) {
     init_queue_query(&recent_queries);
     do {
         printf("\nHELLO! Welcome to our program, please enter a word/words that you want to look for (or type 'exit' to finish): "); //ASK THE USER FOR A WORD/WORDS
-        char input[256];
-fgets(input, sizeof(input), stdin);
-input[strcspn(input, "\n")] = '\0'; // eliminar el salto de línea
-strncpy(keyword, input, sizeof(keyword)); // copiar a 'keyword' para seguir usando tu variable
-
+        scanf("%99s", keyword); //reads user input
         normalize_keyword(keyword); //call the function to normalize the word entered
-        // Si el usuario escribe "history", mostramos las últimas 3 búsquedas y saltamos a la siguiente iteración
-if (strcmp(keyword, "history") == 0) {
-    print_last_queries(&recent_queries); // mostrar últimas 3 queries
-    continue; // saltar el resto del bucle y volver a pedir palabra
-}
-
-// Guardamos esta nueva búsqueda en la cola circular
-enqueue_queries(&recent_queries, keyword);
-
         if (strcmp(keyword, "exit") == 0) {
             //free memory and exit
             free_reverse_index(reverse_index);
             free_documents(docs);
             return 0;
         }
-        // Usa el parser para entender la query
-QueryList *parsed_query = parse_query(keyword);
-if (!parsed_query || !parsed_query->head) {
-    printf("Invalid or empty query.\n");
-    free_query_list(parsed_query);
-    continue;
-}
-
-QueryNode *current = parsed_query->head;
-DocumentsList *results = NULL;
-
-while (current) {
-    DocumentsList *partial = reverseIndexGet(reverse_index, current->keyword);
-
-    if (current->type == INCLUDE) {
-        if (!results) results = partial;
-        else results = merge_documents_lists(results, partial); // esta función debe combinar sin duplicar
-    } else if (current->type == EXCLUDE) {
-        results = exclude_documents(results, partial); // ⚠️ te doy esta función abajo
-    } else if (current->type == OR) {
-        results = merge_documents_lists(results, partial);
-    }
-
-    current = current->next;
-}
-
-if (!results || !results->head) {
-    printf("No documents match the query '%s'.\n", keyword);
-} else {
+        DocumentsList *results = reverseIndexGet(reverse_index, keyword); //search for documents that contain our desired keywords
+        if (!results || !results->head) { //if the word is not in any doc then print the following:
+            printf("No documents contain the word '%s'.\n", keyword);
+        } 
+        else {
+            remove_duplicate_results(results); //this will remove any duplicates in case there is any
+      select_document(results); 
     remove_duplicate_results(results);
-    select_document(results);
-    remove_duplicate_results(results);
-}
-
-free_query_list(parsed_query);
-
     
         }
     } while (1); //we did this in order for our code to repeat unless user types "exit"
