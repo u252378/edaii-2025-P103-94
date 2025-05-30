@@ -159,6 +159,7 @@ void reverseIndexDocument(ReverseIndex *reverse_index, Document *document) {
     }
     token = strtok(NULL, " \t\n\r.,;:!?()[]{}<>\"");
   }
+  free(text);
 }
 
 void reverseIndexSaveToFile(ReverseIndex *index, const char *filename) { // save the word index to a text file
