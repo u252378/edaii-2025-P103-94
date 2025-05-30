@@ -17,7 +17,6 @@ void create_test_document(const char *path, const char *content) {
   fclose(file);
 }
 
-// unit test for doc parsing:
 /*We want to ensure that our function document_desserialize() works correclty
 We also want to catch bugs in ID/title/body/link extraction*/
 void test_document_parsing() {
