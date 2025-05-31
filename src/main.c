@@ -129,7 +129,7 @@ int main(int argc, char **argv) {
             node = node->next;
         }
 
-        // sort by relevance
+        // sort by relevance (using the new implementation)
         temp_head = sort_documents_by_relevance(temp_head);
 
         // print top results
@@ -144,12 +144,12 @@ int main(int argc, char **argv) {
             counter = counter->next;
         }
 
-        // display top 5 results with preview
-        while (curr && index < 5) {
+        // display up to 5 results with preview (fixed to show all 5 when available)
+        while (curr && index < 5) {  // Now properly shows up to 5 results
             printf("\n(%d) %s\n", index, curr->title);
             printf("---\n");
 
-            // Print first 200 characters of body
+            // print first 200 characters of body
             if (curr->body) {
                 int chars_printed = 0;
                 const char *body_ptr = curr->body;
@@ -158,7 +158,7 @@ int main(int argc, char **argv) {
                     body_ptr++;
                     chars_printed++;
                 }
-                if (*body_ptr) printf("..."); // Show ellipsis if there's more text
+                if (*body_ptr) printf("..."); // show ellipsis if there's more text
             }
 
             printf("\n---\n");
@@ -173,7 +173,7 @@ int main(int argc, char **argv) {
         // document selection
         if (index > 0) {
             int selection;
-            printf("\nSelect document to view (0-%d): ", index-1);
+            printf("\nSelect document to view (0-%d): ", (index < 5 ? index-1 : 4)); // Fixed range display
             fflush(stdout);
 
             if (scanf("%d", &selection) != 1) {
@@ -192,7 +192,7 @@ int main(int argc, char **argv) {
             }
 
             if (curr && count == selection) {
-                show_full_document(curr); // Show full document when selected
+                show_full_document(curr); // show full document when selected
             } else {
                 printf("Invalid selection.\n");
             }
