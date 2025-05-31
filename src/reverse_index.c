@@ -104,14 +104,16 @@ void reverseIndexFree(ReverseIndex *index, bool freeLists) {
             ReverseIndexKey *nextKey = key->next;
             
             if (freeLists && key->values) {
-                // Free only the list nodes, not the documents
+                // Only free the DocumentsList structure and nodes
                 DocumentsListNode *current = key->values->head;
                 while (current) {
                     DocumentsListNode *next = current->next;
-                    free(current);  // Free the node only
+                    // Explicitly don't free current->document
+                    free(current);
                     current = next;
                 }
-                free(key->values);  // Free the DocumentsList structure
+                free(key->values);
+                key->values = NULL; // Prevent dangling pointer
             }
             
             free(key->word);
@@ -119,6 +121,7 @@ void reverseIndexFree(ReverseIndex *index, bool freeLists) {
             key = nextKey;
         }
         free(slot);
+        index->slots[i] = NULL; // Prevent dangling pointer
     }
     free(index->slots);
     free(index);

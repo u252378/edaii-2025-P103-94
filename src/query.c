@@ -122,6 +122,7 @@ void free_documents_list(DocumentsList *list) {
     DocumentsListNode *current = list->head;
     while (current) {
         DocumentsListNode *next = current->next;
+        // Only free the node, not the document it references
         free(current);
         current = next;
     }
