@@ -58,7 +58,6 @@ int main(int argc, char **argv) {
     }
 
     // load all docs from the folder
-     printf("\n[1] Cargando documentos...");
     Document *docs = load_documents_from_folder(argv[1]);
     if (!docs) {
         printf("No documents found or failed to load.\n");
@@ -66,7 +65,6 @@ int main(int argc, char **argv) {
     }
 
     // build the reverse index for fast keyword lookups
-    
     ReverseIndex *reverse_index = build_reverse_index(docs);
     if (!reverse_index) {
         printf("Failed to build reverse index.\n");
@@ -131,7 +129,7 @@ int main(int argc, char **argv) {
             node = node->next;
         }
 
-        // sort by relevance (using the new implementation)
+        // sort by relevance
         temp_head = sort_documents_by_relevance(temp_head);
 
         // print top results
@@ -146,21 +144,21 @@ int main(int argc, char **argv) {
             counter = counter->next;
         }
 
-        // display top 5 results
+        // display top 5 results with preview
         while (curr && index < 5) {
             printf("\n(%d) %s\n", index, curr->title);
             printf("---\n");
 
-            // print first 200 characters of body
+            // Print first 200 characters of body
             if (curr->body) {
                 int chars_printed = 0;
                 const char *body_ptr = curr->body;
                 while (*body_ptr && chars_printed < 200) {
                     putchar(*body_ptr);
-                    if (*body_ptr == '\n') chars_printed++;
                     body_ptr++;
+                    chars_printed++;
                 }
-                if (*body_ptr) printf("...");
+                if (*body_ptr) printf("..."); // Show ellipsis if there's more text
             }
 
             printf("\n---\n");
@@ -194,7 +192,7 @@ int main(int argc, char **argv) {
             }
 
             if (curr && count == selection) {
-                show_full_document(curr);
+                show_full_document(curr); // Show full document when selected
             } else {
                 printf("Invalid selection.\n");
             }
