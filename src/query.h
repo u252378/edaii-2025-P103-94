@@ -1,7 +1,7 @@
 #ifndef QUERY_H
 #define QUERY_H
 
-#include "document.h" // This now contains the DocumentsList definition
+#include "document.h"
 
 typedef enum { INCLUDE, EXCLUDE, OR } QueryType;
 
@@ -17,14 +17,14 @@ typedef struct {
     QueryNode *head;
 } QueryList;
 
-// Recent queries queue (circular buffer)
+// Queue of recent queries (implemented as a circular buffer)
 typedef struct {
-    char *queries[3];  // Stores up to 3 recent queries
-    int start;         // Index of oldest query
-    int size;          // Current number of queries (0-3)
+    char *queries[3]; // Stores up to 3 recent queries
+    int start;  // this is the index of oldest query
+    int size; // to know current number of queries (from 0 to 3 in size)
 } QueueQueries;
 
-// Query list functions
+// functions to implement query linked list
 QueryList *create_query_list(void);
 void free_query_list(QueryList *list);
 void add_keyword(QueryList *query_list, const char *keyword, QueryType type);

@@ -2,12 +2,14 @@
 #define DIRECTED_DOCUMENT_GRAPH_H
 #include "document.h"
 
+// data structure of graph
 typedef struct {
   int num_vertices;
   float **adjacency_matrix; // adjacency matrix that will store edges weights between vertices
   Document **documents; // array of pointers with pointers to each Document
 } Graph;
 
+// functions to implement a directed document graph
 Graph *create_graph(int N);
 void add_vertex(Graph *graph, Document *document);
 void add_edge(Graph *graph, int i, int j, float weight);
@@ -19,6 +21,7 @@ void set_edge(Graph *graph, int i, int j, float weight);
 void list_vertex(Graph *graph);
 void list_edges(Graph *graph);
 void print_matrix(Graph *graph);
+
 // Get indegree of a document in the graph and print it as the relevance score:
 int get_indegree(Graph *graph, int j);
 void print_relevance_scores(Graph *graph);
