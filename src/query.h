@@ -7,21 +7,21 @@ typedef enum { INCLUDE, EXCLUDE, OR } QueryType;
 
 // Node in the query linked list
 typedef struct QueryNode {
-  char *keyword;
-  QueryType type;
-  struct QueryNode *next;
+    char *keyword;
+    QueryType type;
+    struct QueryNode *next;
 } QueryNode;
 
 // Query list structure
 typedef struct {
-  QueryNode *head;
+    QueryNode *head;
 } QueryList;
 
 // Recent queries queue (circular buffer)
 typedef struct {
-  char *queries[3];  // Stores up to 3 recent queries
-  int start;         // Index of oldest query
-  int size;          // Current number of queries (0-3)
+    char *queries[3];  // Stores up to 3 recent queries
+    int start;         // Index of oldest query
+    int size;          // Current number of queries (0-3)
 } QueueQueries;
 
 // Query list functions
