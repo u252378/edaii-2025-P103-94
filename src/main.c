@@ -132,21 +132,21 @@ int main(int argc, char **argv) {
         // sort by relevance (using the new implementation)
         temp_head = sort_documents_by_relevance(temp_head);
 
-        // print top results
-        printf("\nTop 5 results for '%s':\n", keyword);  // Fixed to say "Top 5" instead of "Top 10"
-        Document *curr = temp_head;
-        int index = 0, total_results = 0;
-
-        // count total results
+        // FIRST count all matching results
+        int total_results = 0;
         Document *counter = temp_head;
         while (counter) {
             total_results++;
             counter = counter->next;
         }
 
-        // display up to 5 results with preview
-        while (curr && index < 5) {
-            printf("\n(%d) %s\n", index, curr->title);
+        // THEN display up to 5 results
+        printf("\nTop 5 results for '%s':\n", keyword);
+        Document *curr = temp_head;
+        int displayed_results = 0;
+        
+        while (curr && displayed_results < 5) {
+            printf("\n(%d) %s\n", displayed_results, curr->title);
             printf("---\n");
 
             // print first 200 characters of body
@@ -165,15 +165,15 @@ int main(int argc, char **argv) {
             printf("relevance score: %.2f\n", curr->relevance);
 
             curr = curr->next;
-            index++;
+            displayed_results++;
         }
 
         printf("\n[%d total results]\n", total_results);
 
         // document selection
-        if (index > 0) {
+        if (displayed_results > 0) {
             int selection;
-            printf("\nSelect document to view (0-%d): ", index-1);
+            printf("\nSelect document to view (0-%d): ", (displayed_results-1));
             fflush(stdout);
 
             if (scanf("%d", &selection) != 1) {
