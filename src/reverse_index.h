@@ -24,9 +24,7 @@ reverseIndexInit(int slots); // create and initialize the reverse index
 void reverseIndexPut(ReverseIndex *index, char *word, DocumentsListNode *node); // add a word and its associated document list to the index
 void reverseIndexFree(ReverseIndex *index, bool freeLists);
 
-DocumentsList *reverseIndexGet(
-    ReverseIndex *index,
-    char *word); // get the list of documents that contain the given word
+DocumentsList *reverseIndexGet(ReverseIndex *index,char *word); // get the list of documents that contain the given word
 
 void reverseIndexFree(ReverseIndex *index, bool freeLists);
 void normalize_keyword(char *word);
