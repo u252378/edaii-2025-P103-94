@@ -149,19 +149,21 @@ void print_document_compact(const Document *doc) {
 //free all allocated memory for a list of documents:
 void free_documents(Document *head) {
     while (head) {
-        Document *next = head->next; //store next document before freeing the current one
+        Document *next = head->next;
         
+        // Free all document components
         if (head->title) free(head->title);
         if (head->body) free(head->body);
         
-        Link *link = head->links; //start freeing links 
+        // Free links
+        Link *link = head->links;
         while (link) {
-            Link *tmp = link->next; //store new link before freeing current
+            Link *tmp = link->next;
             free(link);
             link = tmp;
         }
         
         free(head);
-        head = next; //move to next doc
+        head = next;
     }
 }

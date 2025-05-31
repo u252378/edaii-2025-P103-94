@@ -28,7 +28,7 @@ DocumentsList *reverseIndexGet(
     ReverseIndex *index,
     char *word); // get the list of documents that contain the given word
 
-void reverseIndexFree(ReverseIndex *index, bool freeLists, bool freeDocs);
+void reverseIndexFree(ReverseIndex *index, bool freeLists);
 void normalize_keyword(char *word);
 void reverseIndexDocument(ReverseIndex *reverse_index,Document *document); // tokenize a document and add all its words to the index
 void reverseIndexSaveToFile(ReverseIndex *reverse_index,const char *filename); // saves the reverse index to a file

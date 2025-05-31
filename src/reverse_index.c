@@ -92,38 +92,37 @@ DocumentsList *reverseIndexGet(ReverseIndex *index,char *word) { // function to 
   return NULL; // word not found
 }
 
-void reverseIndexFree(ReverseIndex *index, bool freeLists, bool freeDocs) {
-  if (!index) return;
-  (void)freeDocs; 
+void reverseIndexFree(ReverseIndex *index, bool freeLists) {
+    if (!index) return;
 
-  for (int i = 0; i < index->slotsCount; i++) {
-    ReverseIndexSlot *slot = index->slots[i];
-    if (!slot) continue;
+    for (int i = 0; i < index->slotsCount; i++) {
+        ReverseIndexSlot *slot = index->slots[i];
+        if (!slot) continue;
 
-    ReverseIndexKey *key = slot->keys;
-    while (key) {
-      ReverseIndexKey *nextKey = key->next;
-      
-      if (freeLists && key->values) {
-        DocumentsListNode *docList = key->values->head;
-        while (docList) {
-          DocumentsListNode *nextDoc = docList->next;
-          free(docList); //free list node (not the doc)
-          docList = nextDoc;
+        ReverseIndexKey *key = slot->keys;
+        while (key) {
+            ReverseIndexKey *nextKey = key->next;
+            
+            if (freeLists && key->values) {
+                // Free only the list nodes, not the documents
+                DocumentsListNode *current = key->values->head;
+                while (current) {
+                    DocumentsListNode *next = current->next;
+                    free(current);  // Free the node only
+                    current = next;
+                }
+                free(key->values);  // Free the DocumentsList structure
+            }
+            
+            free(key->word);
+            free(key);
+            key = nextKey;
         }
-        free(key->values);
-      }
-      
-      free(key->word);
-      free(key);
-      key = nextKey;
+        free(slot);
     }
-    free(slot);
-  }
-  free(index->slots);
-  free(index);
+    free(index->slots);
+    free(index);
 }
-    
 //**normalize words in the parser (uppercase, punctuation, etc.) [LAB 3]:
 //fuction to convert all words to lowercase,and also to only accept letters, and store the final word in the same place
 void normalize_keyword(char *word) {
@@ -237,6 +236,6 @@ void print_reverse_index(const ReverseIndex *index) {
   reverseIndexSaveToFile((ReverseIndex *)index, "reverse_index.txt"); //save index to file
 }
 
-void free_reverse_index(ReverseIndex *index) { 
-  reverseIndexFree(index, true, true); //free index with lists and optionally documents
+void free_reverse_index(ReverseIndex *index) {
+    reverseIndexFree(index, true);  // Only free index structures
 }
