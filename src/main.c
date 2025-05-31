@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
 
     /* Main interactive search loop */
     while (1) {
-        printf("\n>>> Enter search query (use -word to exclude, or 'exit' to quit): ");
+        printf("\n>>> HELLO! Welcome to our program, please enter a word/words that you want to look for (or type 'exit' to finish): ");
         fflush(stdout);
 
         /* Read user input */
