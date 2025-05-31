@@ -189,11 +189,12 @@ int main(int argc, char **argv) {
             keyword_node = keyword_node->next;
         }
 
-        /* Skip display if no results */
-        if (!has_results || !combined_results || !combined_results->head) {
-            free_query_list(query);
-            continue;
-        }
+        if (!combined_results || !combined_results->head) {
+    printf("\nNo results found to display.\n");
+    free_query_list(query);
+    free_documents_list(combined_results);
+    continue;  // Salta la iteración actual para evitar error
+}
 
         /* Convert to Document linked list for sorting */
         Document *temp_head = NULL;
