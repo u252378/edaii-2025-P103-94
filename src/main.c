@@ -273,7 +273,7 @@ int main(int argc, char **argv) {
     }
 
     /* Program cleanup */
-    free_reverse_index(reverse_index);
+    reverseIndexFree(reverse_index, true);
     free_documents(docs);
     free_queue_queries(&recent_queries);
 
