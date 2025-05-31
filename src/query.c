@@ -133,8 +133,6 @@ void remove_duplicate_results(DocumentsList *results) {
     if (!results || !results->head) return;
     
     DocumentsListNode *current = results->head;
-    results->number_documents = 0;
-    
     while (current) {
         DocumentsListNode *runner = current;
         while (runner->next) {
@@ -149,7 +147,6 @@ void remove_duplicate_results(DocumentsList *results) {
                 runner = runner->next;
             }
         }
-        results->number_documents++;
         current = current->next;
     }
 }

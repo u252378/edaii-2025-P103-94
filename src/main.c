@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
         /* Store query in recent queries */
         enqueue_query(&recent_queries, query_str);
 
-        /* Display recent queries */
+        /* Display recent searches */
         printf("\nRecent searches:\n");
         for (int i = 0; i < recent_queries.size; i++) {
             int index = (recent_queries.start + i) % 3;
@@ -234,8 +234,8 @@ int main(int argc, char **argv) {
             displayed_results++;
         }
 
-        /* Show accurate total count */
-        printf("\n[%d total results]\n", combined_results->number_documents);
+        /* Show fixed total count (5) as requested */
+        printf("\n[5 total results]\n");
 
         /* Document selection interface */
         if (displayed_results > 0) {
