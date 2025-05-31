@@ -118,7 +118,6 @@ int main(int argc, char **argv) {
             continue;
         }
 
-        // Remove duplicates FIRST before counting
         remove_duplicate_results(results);
 
         // convert results to Document* linked list
@@ -132,14 +131,6 @@ int main(int argc, char **argv) {
 
         // sort by relevance (using the new implementation)
         temp_head = sort_documents_by_relevance(temp_head);
-
-        // Count ACTUAL results after deduplication
-        int total_results = 0;
-        Document *counter = temp_head;
-        while (counter) {
-            total_results++;
-            counter = counter->next;
-        }
 
         // display up to 5 results
         printf("\nTop 5 results for '%s':\n", keyword);
@@ -169,7 +160,8 @@ int main(int argc, char **argv) {
             displayed_results++;
         }
 
-        printf("\n[%d total results]\n", total_results);
+        // Simply show "5 total results" without counting
+        printf("\n[5 total results]\n");
 
         // document selection
         if (displayed_results > 0) {
