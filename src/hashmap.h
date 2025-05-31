@@ -4,9 +4,9 @@
 
 // first, we will define a structure of the node in the hash map's linked list (which we will use for separate chaining)
 typedef struct HashNode {
-  char *key; // example: document ID
+  char *key;
   Document *value; // pointer to the associated Document
-  struct HashNode *next; // pointer to the next node in the chain (for avoiding collisions)
+  struct HashNode *next; // pointer to the next node in the chain
 } HashNode;
 
 // now, we define the HashMap structure itself:
