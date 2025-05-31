@@ -1,6 +1,7 @@
 #include "sort_search.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 float calculate_relevance(Document *doc, const char *keyword) {
     if (!doc || !keyword) return 0.0f;
