@@ -3,9 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* Existing Query List Functions (unchanged) */
-
-// Creates a new empty query list
+/* Creates a new empty query list */
 QueryList *create_query_list(void) {
   QueryList *list = malloc(sizeof(QueryList));
   if (!list) return NULL;
@@ -13,7 +11,7 @@ QueryList *create_query_list(void) {
   return list;
 }
 
-// Frees all memory associated with a query list
+/* Frees all memory associated with a query list */
 void free_query_list(QueryList *list) {
   QueryNode *current = list->head;
   while (current) {
@@ -25,7 +23,7 @@ void free_query_list(QueryList *list) {
   free(list);
 }
 
-// Adds a new keyword to the query list
+/* Adds a new keyword to the query list */
 void add_keyword(QueryList *query_list, const char *keyword, QueryType type) {
   QueryNode *new_node = malloc(sizeof(QueryNode));
   if (!new_node) return;
@@ -43,7 +41,7 @@ void add_keyword(QueryList *query_list, const char *keyword, QueryType type) {
   }
 }
 
-// Parses a query string into a QueryList structure
+/* Parses a query string into a QueryList structure */
 QueryList *parse_query(const char *input) {
   QueryList *list = create_query_list();
   if (!list) return NULL;
@@ -77,7 +75,7 @@ QueryList *parse_query(const char *input) {
   return list;
 }
 
-// Prints the query list for debugging purposes
+/* Prints the query list for debugging purposes */
 void print_query_list(const QueryList *list) {
   QueryNode *current = list->head;
   while (current) {
@@ -87,9 +85,7 @@ void print_query_list(const QueryList *list) {
   printf("NULL\n");
 }
 
-/* Queue Functions (for recent searches) */
-
-// Initializes a new query queue
+/* Initializes a new query queue */
 void init_queue_query(QueueQueries *queue) {
   queue->start = 0;
   queue->size = 0;
@@ -98,9 +94,8 @@ void init_queue_query(QueueQueries *queue) {
   }
 }
 
-// Adds a query to the recent queries queue
+/* Adds a query to the recent queries queue */
 void enqueue_query(QueueQueries *queue, const char *keyword) {
-  // Remove oldest if queue is full
   if (queue->size == 3) {
     free(queue->queries[queue->start]);
     queue->start = (queue->start + 1) % 3;
@@ -108,12 +103,11 @@ void enqueue_query(QueueQueries *queue, const char *keyword) {
     queue->size++;
   }
   
-  // Add new query at next available position
   int pos = (queue->start + queue->size - 1) % 3;
   queue->queries[pos] = strdup(keyword);
 }
 
-// Frees all memory used by the query queue
+/* Frees all memory used by the query queue */
 void free_queue_queries(QueueQueries *queue) {
   for (int i = 0; i < queue->size; i++) {
     free(queue->queries[(queue->start + i) % 3]);
@@ -121,9 +115,7 @@ void free_queue_queries(QueueQueries *queue) {
   queue->size = 0;
 }
 
-/* Document List Operations */
-
-// Frees a documents list and all its nodes
+/* Frees a documents list and all its nodes */
 void free_documents_list(DocumentsList *list) {
     if (!list) return;
     
@@ -136,11 +128,13 @@ void free_documents_list(DocumentsList *list) {
     free(list);
 }
 
-// Removes duplicate documents from a results list
+/* Removes duplicate documents from a results list */
 void remove_duplicate_results(DocumentsList *results) {
     if (!results || !results->head) return;
     
     DocumentsListNode *current = results->head;
+    results->number_documents = 0;
+    
     while (current) {
         DocumentsListNode *runner = current;
         while (runner->next) {
@@ -150,17 +144,17 @@ void remove_duplicate_results(DocumentsList *results) {
                 if (temp == results->tail) {
                     results->tail = runner;
                 }
-                results->number_documents--;
                 free(temp);
             } else {
                 runner = runner->next;
             }
         }
+        results->number_documents++;
         current = current->next;
     }
 }
 
-// Returns the intersection of two document lists
+/* Returns the intersection of two document lists */
 DocumentsList *intersect_documents_lists(DocumentsList *list1, DocumentsList *list2) {
     if (!list1 || !list2) return NULL;
     

@@ -7,7 +7,7 @@
 #include <ctype.h>
 #include <string.h>
 
-// function to show all details of a document
+/* Shows all details of a document */
 void show_full_document(Document *doc) {
     if (!doc) return;
     
@@ -29,21 +29,22 @@ void show_full_document(Document *doc) {
     printf("=================================\n");
 }
 
+/* Main program entry point */
 int main(int argc, char **argv) {
-    // check if dataset folder path is provided
+    /* Check command line arguments */
     if (argc < 2) {
         printf("Usage: %s <dataset_folder>\n", argv[0]);
         return 1;
     }
 
-    // load all docs from the folder
+    /* Load documents from specified folder */
     Document *docs = load_documents_from_folder(argv[1]);
     if (!docs) {
         printf("No documents found or failed to load.\n");
         return 1;
     }
 
-    // build the reverse index for fast keyword lookups
+    /* Build reverse index for efficient searching */
     ReverseIndex *reverse_index = build_reverse_index(docs);
     if (!reverse_index) {
         printf("Failed to build reverse index.\n");
@@ -51,62 +52,65 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    // interactive search (MAIN FEATURE OF OUR PROGRAM)
+    /* Initialize recent queries queue */
     char query_str[256];
     QueueQueries recent_queries;
     init_queue_query(&recent_queries);
 
+    /* Main interactive search loop */
     while (1) {
         printf("\n>>> Enter search query (use -word to exclude, or 'exit' to quit): ");
         fflush(stdout);
 
-        // read input line
+        /* Read user input */
         if (fgets(query_str, sizeof(query_str), stdin) == NULL) {
             break;
         }
 
-        // remove newline character
+        /* Remove trailing newline */
         query_str[strcspn(query_str, "\n")] = '\0';
 
-        // check for exit command
+        /* Check for exit command */
         if (strcmp(query_str, "exit") == 0) {
             break;
         }
 
-        // skip empty input
+        /* Skip empty queries */
         if (strlen(query_str) == 0) {
             continue;
         }
 
-        // parse query into keywords (handles INCLUDES/EXCLUDES)
+        /* Parse query into structured format */
         QueryList *query = parse_query(query_str);
         if (!query || !query->head) {
             printf("\nInvalid query format\n");
             continue;
         }
 
-        // add to recent queries
+        /* Store query in recent queries */
         enqueue_query(&recent_queries, query_str);
 
-        // show recent searches
+        /* Display recent queries */
         printf("\nRecent searches:\n");
         for (int i = 0; i < recent_queries.size; i++) {
             int index = (recent_queries.start + i) % 3;
             printf("* %s\n", recent_queries.queries[index]);
         }
 
-        // search for documents containing the keywords
+        /* Process each keyword in the query */
         DocumentsList *combined_results = NULL;
+        int has_results = 1;
         QueryNode *keyword_node = query->head;
-        int first_keyword = 1;
         
-        while (keyword_node) {
+        while (keyword_node && has_results) {
             normalize_keyword(keyword_node->keyword);
             DocumentsList *results = reverseIndexGet(reverse_index, keyword_node->keyword);
             
+            /* Handle missing terms */
             if (!results || !results->head) {
                 if (keyword_node->type == INCLUDE) {
-                    printf("\nNo documents contain all required search terms\n");
+                    printf("\nNo documents contain the required term: %s\n", keyword_node->keyword);
+                    has_results = 0;
                     if (combined_results) free_documents_list(combined_results);
                     combined_results = NULL;
                     break;
@@ -115,73 +119,82 @@ int main(int argc, char **argv) {
                 continue;
             }
             
+            /* Remove duplicates from results */
             remove_duplicate_results(results);
             
-            if (first_keyword) {
-                combined_results = results;
-                first_keyword = 0;
-            } 
-            else if (keyword_node->type == EXCLUDE) {
-                // Handle excluded terms by removing matching documents
-                DocumentsList *filtered = malloc(sizeof(DocumentsList));
-                filtered->head = NULL;
-                filtered->tail = NULL;
-                filtered->number_documents = 0;
-                
-                DocumentsListNode *curr = combined_results->head;
-                while (curr) {
-                    int should_include = 1;
-                    DocumentsListNode *exclude_node = results->head;
-                    while (exclude_node) {
-                        if (curr->document->doc_id == exclude_node->document->doc_id) {
-                            should_include = 0;
-                            break;
+            /* Process excluded terms */
+            if (keyword_node->type == EXCLUDE) {
+                if (combined_results) {
+                    DocumentsList *filtered = malloc(sizeof(DocumentsList));
+                    filtered->head = NULL;
+                    filtered->tail = NULL;
+                    filtered->number_documents = 0;
+                    
+                    DocumentsListNode *curr = combined_results->head;
+                    while (curr) {
+                        int should_include = 1;
+                        DocumentsListNode *exclude_node = results->head;
+                        while (exclude_node) {
+                            if (curr->document->doc_id == exclude_node->document->doc_id) {
+                                should_include = 0;
+                                break;
+                            }
+                            exclude_node = exclude_node->next;
                         }
-                        exclude_node = exclude_node->next;
+                        
+                        if (should_include) {
+                            DocumentsListNode *new_node = malloc(sizeof(DocumentsListNode));
+                            new_node->document = curr->document;
+                            new_node->next = NULL;
+                            
+                            if (filtered->tail) {
+                                filtered->tail->next = new_node;
+                            } else {
+                                filtered->head = new_node;
+                            }
+                            filtered->tail = new_node;
+                            filtered->number_documents++;
+                        }
+                        curr = curr->next;
                     }
                     
-                    if (should_include) {
-                        DocumentsListNode *new_node = malloc(sizeof(DocumentsListNode));
-                        new_node->document = curr->document;
-                        new_node->next = NULL;
-                        
-                        if (filtered->tail) {
-                            filtered->tail->next = new_node;
-                        } else {
-                            filtered->head = new_node;
-                        }
-                        filtered->tail = new_node;
-                        filtered->number_documents++;
+                    free_documents_list(combined_results);
+                    free_documents_list(results);
+                    combined_results = filtered;
+                    
+                    if (!combined_results->head) {
+                        has_results = 0;
+                        printf("\nAll results excluded by term: %s\n", keyword_node->keyword);
                     }
-                    curr = curr->next;
                 }
-                
-                free_documents_list(combined_results);
-                free_documents_list(results);
-                combined_results = filtered;
-            }
+            } 
+            /* Process included terms */
             else {
-                // Normal intersection for included terms
-                DocumentsList *intersected = intersect_documents_lists(combined_results, results);
-                free_documents_list(combined_results);
-                free_documents_list(results);
-                combined_results = intersected;
-            }
-            
-            if (!combined_results || !combined_results->head) {
-                printf("\nNo documents match all search criteria\n");
-                break;
+                if (!combined_results) {
+                    combined_results = results;
+                } else {
+                    DocumentsList *intersected = intersect_documents_lists(combined_results, results);
+                    free_documents_list(combined_results);
+                    free_documents_list(results);
+                    combined_results = intersected;
+                    
+                    if (!combined_results->head) {
+                        has_results = 0;
+                        printf("\nNo documents contain all required terms\n");
+                    }
+                }
             }
             
             keyword_node = keyword_node->next;
         }
 
-        if (!combined_results || !combined_results->head) {
+        /* Skip display if no results */
+        if (!has_results || !combined_results || !combined_results->head) {
             free_query_list(query);
             continue;
         }
 
-        // convert results to Document* linked list
+        /* Convert to Document linked list for sorting */
         Document *temp_head = NULL;
         DocumentsListNode *node = combined_results->head;
         while (node) {
@@ -190,11 +203,11 @@ int main(int argc, char **argv) {
             node = node->next;
         }
 
-        // sort by relevance
+        /* Sort documents by relevance */
         temp_head = sort_documents_by_relevance(temp_head);
 
-        // display up to 5 results
-        printf("\nTop 5 results for '%s':\n", query_str);
+        /* Display top results */
+        printf("\nTop results for '%s':\n", query_str);
         Document *curr = temp_head;
         int displayed_results = 0;
         
@@ -202,7 +215,7 @@ int main(int argc, char **argv) {
             printf("\n(%d) %s\n", displayed_results, curr->title);
             printf("---\n");
 
-            // print first 200 characters of body
+            /* Print document preview */
             if (curr->body) {
                 int chars_printed = 0;
                 const char *body_ptr = curr->body;
@@ -221,9 +234,10 @@ int main(int argc, char **argv) {
             displayed_results++;
         }
 
+        /* Show accurate total count */
         printf("\n[%d total results]\n", combined_results->number_documents);
 
-        // document selection
+        /* Document selection interface */
         if (displayed_results > 0) {
             int selection;
             printf("\nSelect document to view (0-%d): ", (displayed_results-1));
@@ -238,7 +252,7 @@ int main(int argc, char **argv) {
             }
             while (getchar() != '\n');
 
-            // find selected document
+            /* Find and display selected document */
             curr = temp_head;
             int count = 0;
             while (curr && count < selection) {
@@ -253,11 +267,12 @@ int main(int argc, char **argv) {
             }
         }
         
+        /* Clean up query and results */
         free_query_list(query);
         free_documents_list(combined_results);
     }
 
-    // free memory before exiting program
+    /* Program cleanup */
     free_reverse_index(reverse_index);
     free_documents(docs);
     free_queue_queries(&recent_queries);
