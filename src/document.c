@@ -7,7 +7,7 @@
 #include <string.h>
 #include <sys/stat.h>
 
-/* Helper function to create a new Link node */
+//helper function to create a new Link node:
 Link *create_link(int id) {
     Link *newLink = malloc(sizeof(Link));
     if (!newLink) return NULL; // Return NULL if memory allocation fails
@@ -17,7 +17,7 @@ Link *create_link(int id) {
     return newLink;
 }
 
-/* Deserialize a single document file */
+//deserialize a single document file
 Document *document_desserialize(FILE *file) {
     if (!file) return NULL;
 
@@ -31,7 +31,7 @@ Document *document_desserialize(FILE *file) {
     // Read line 2: Document title
     if (!fgets(buffer, sizeof(buffer), file)) return NULL;
     char *title = strdup(buffer); // Duplicate the title string to allocate memory
-    if (!title) return NULL;       // Check memory allocation
+    if (!title) return NULL; // Check memory allocation
     title[strcspn(title, "\n")] = '\0'; // Remove newline character
 
     // Read the rest: Document body
@@ -76,16 +76,16 @@ Document *document_desserialize(FILE *file) {
     return doc;
 }
 
-/* Load all documents from the specified folder */
+//load all documents from the specified folder
 Document *load_documents_from_folder(char *folder_path) {
-    DIR *dir = opendir(folder_path);
+    DIR *dir = opendir(folder_path); //open the directory
     if (!dir) return NULL;
 
     struct dirent *entry;
     Document *head = NULL;
 
-    while ((entry = readdir(dir))) {
-        if (entry->d_type == DT_REG) { // Only process regular files
+    while ((entry = readdir(dir))) { //iterate over each entry 
+        if (entry->d_type == DT_REG) { //only process regular files (we had to look it up)
             char fullpath[1024];
             snprintf(fullpath, sizeof(fullpath), "%s/%s", folder_path, entry->d_name);
 
@@ -109,7 +109,7 @@ Document *load_documents_from_folder(char *folder_path) {
     return head;
 }
 
-/* Print details of a document */
+//print details of a document 
 void print_document_details(const Document *doc) {
     if (!doc) return;
 
@@ -125,7 +125,7 @@ void print_document_details(const Document *doc) {
     }
 }
 
-/* Print document in compact format with all metadata */
+//print document in compact format
 void print_document_compact(const Document *doc) {
     if (!doc) return;
 
@@ -153,7 +153,7 @@ void print_document_compact(const Document *doc) {
     printf("-----------------------------\n");
 }
 
-/* Free all allocated memory for a list of documents */
+//free all allocated memory for a list of documents
 void free_documents(Document *head) {
     while (head) {
         Document *next = head->next;

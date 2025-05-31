@@ -1,4 +1,3 @@
-// main.c
 #include "document.h"
 #include "query.h"
 #include "reverse_index.h"
@@ -8,11 +7,9 @@
 #include <ctype.h>
 #include <string.h>
 
-/* -----------------------------------------------------------------------
- * Función para mostrar un documento completo (título, cuerpo, enlaces)
- * ----------------------------------------------------------------------- */
+//function to display all details of a single document (title, body, links) in the format required in the pdf:
 void show_full_document(Document *doc) {
-    if (!doc) return;
+    if (!doc) return; //if the doc pointer is null do nothing
     
     printf("\n=================================\n");
     printf("ID: %d\nTitle: %s\n", doc->doc_id, doc->title);
@@ -20,11 +17,11 @@ void show_full_document(Document *doc) {
     printf("---------------------------------\n");
     printf("%s\n", doc->body);
 
-    if (doc->links) {
+    if (doc->links) { //if doc has external links 
         printf("Links:\n");
         Link *current = doc->links;
-        while (current != NULL) {
-            printf("- Document ID: %d\n", current->id);
+        while (current != NULL) { //for each link node in the list loop
+            printf("- Document ID: %d\n", current->id); //print id of the linked doc
             current = current->next;
         }
     }
@@ -32,123 +29,102 @@ void show_full_document(Document *doc) {
     printf("=================================\n");
 }
 
-/* -----------------------------------------------------------------------
- * Main program
- * ----------------------------------------------------------------------- */
 int main(int argc, char **argv) {
-    /* 1) Comprobación de argumentos */
-    if (argc < 2) {
+    if (argc < 2) { //argument check
         printf("Usage: %s <dataset_folder>\n", argv[0]);
         return 1;
     }
 
-    /* 2) Cargar todos los documentos desde la carpeta indicada */
-    Document *docs = load_documents_from_folder(argv[1]);
-    if (!docs) {
+    Document *docs = load_documents_from_folder(argv[1]); //load all docs from the specified folder using the function created in document.c
+    if (!docs) { //in case loading fails or no docs were found, exit and print a message
         printf("No documents found or failed to load.\n");
         return 1;
     }
 
-    /* 3) Construir índice invertido */
-    ReverseIndex *reverse_index = build_reverse_index(docs);
-    if (!reverse_index) {
+    ReverseIndex *reverse_index = build_reverse_index(docs); //build the reverse index for keyword lookups
+    if (!reverse_index) { //if it fails to create the index, exit, free docs and print message 
         printf("Failed to build reverse index.\n");
         free_documents(docs);
         return 1;
     }
 
-    /* 4) Inicializar cola de consultas recientes */
-    char query_str[256];
+    char query_str[256]; //initialize queue of recent searches (just 3)
     QueueQueries recent_queries;
     init_queue_query(&recent_queries);
 
-    /* 5) Bucle principal de interacción */
-    while (1) {
+    while (1) { //main loop for asking for a word to search for
         printf("\n>>> HELLO! Welcome to our program,\n");
         printf("    please enter a word/words that you want to look for\n");
         printf("    (or type 'exit' to finish): ");
-        fflush(stdout);
+        fflush(stdout); //flush stdout to ensure prompt appears (we had to look it up as it was causing errors)
 
-        /* 5.1) Leer línea de usuario */
-        if (fgets(query_str, sizeof(query_str), stdin) == NULL) {
+        if (fgets(query_str, sizeof(query_str), stdin) == NULL) { //reads input 
             break;
         }
-        /* Quitar el salto de línea final */
-        query_str[strcspn(query_str, "\n")] = '\0';
 
-        /* 5.2) Si el usuario escribe "exit", terminar */
-        if (strcmp(query_str, "exit") == 0) {
+        query_str[strcspn(query_str, "\n")] = '\0'; //remove the trailing newline character, if present (we also had to look it up)
+
+        if (strcmp(query_str, "exit") == 0) { //exit functionality
             break;
         }
-        /* 5.3) Evitar procesar cadena vacía */
-        if (strlen(query_str) == 0) {
+
+        if (strlen(query_str) == 0) { //if user typed enter, skip and ask again
             continue;
         }
 
-        /* 5.4) Parsear la consulta en QueryList */
-        QueryList *query = parse_query(query_str);
+        QueryList *query = parse_query(query_str); //parse the query string into a linked list of keywords
         if (!query || !query->head) {
             printf("\nInvalid query format\n");
             if (query) free_query_list(query);
             continue;
         }
 
-        /* 5.5) Añadir la consulta a la cola de recientes */
-        enqueue_query(&recent_queries, query_str);
+        enqueue_query(&recent_queries, query_str); //add the user’s query string to the recent-queries queue
 
-        /* 5.6) Mostrar últimas 3 búsquedas */
-        printf("\nRecent searches:\n");
+        printf("\nRecent searches:\n"); //display the last 3 searches
         for (int i = 0; i < recent_queries.size; i++) {
             int index = (recent_queries.start + i) % 3;
             printf("* %s\n", recent_queries.queries[index]);
         }
 
-        /* 5.7) Iterar sobre cada término de la query */
-        DocumentsList *combined_results = NULL;
+        DocumentsList *combined_results = NULL; //to combine more than 1 word
         int has_results = 1;
         QueryNode *keyword_node = query->head;
 
-        while (keyword_node && has_results) {
-            /* 5.7.1) Normalizar la palabra (todo a minúsculas, quitar no alfabéticos) */
-            normalize_keyword(keyword_node->keyword);
+        while (keyword_node && has_results) { //when it matches
+            normalize_keyword(keyword_node->keyword); //normalize the word to avoid problems
 
-            /* 5.7.2) Obtener lista de documentos que contienen este término */
-            DocumentsList *results = reverseIndexGet(reverse_index, keyword_node->keyword);
+            DocumentsList *results = reverseIndexGet(reverse_index, keyword_node->keyword); //gets a list of the docs containing the input word/s
 
-            /* 5.7.3) Si no hay resultados y el término era INCLUDE, abortar búsqueda */
-            if (!results || !results->head) {
+            if (!results || !results->head) { //if there are NO docs containing the word
                 if (keyword_node->type == INCLUDE) {
-                    printf("\nNo documents contain the required term: %s\n",
-                           keyword_node->keyword);
+                    printf("\nNo documents contain the required term: %s\n", keyword_node->keyword);
                     has_results = 0;
                     if (combined_results) {
                         free_documents_list(combined_results);
                         combined_results = NULL;
                     }
-                    if (results) free_documents_list(results);
+                    if (results) free_documents_list(results); //free combined results to avoid segmentation fault 
                     break;
                 }
-                /* 5.7.4) Si es EXCLUDE y results == NULL, no hay nada que excluir */
-                if (keyword_node->type == EXCLUDE) {
+
+                if (keyword_node->type == EXCLUDE) { //if keyword type is EXCLUDE and no results, there is nothing to exclude
                     if (results) free_documents_list(results);
                     keyword_node = keyword_node->next;
                     continue;
                 }
-                /* 5.7.5) Si es OR y results == NULL, simplemente ignorar este término */
-                if (keyword_node->type == OR) {
+
+                if (keyword_node->type == OR) { //if one of the words does not match keep going as it is an OR
                     if (results) free_documents_list(results);
                     keyword_node = keyword_node->next;
                     continue;
                 }
             }
 
-            /* 5.7.6) Eliminar posibles duplicados dentro de 'results' */
-            remove_duplicate_results(results);
+            remove_duplicate_results(results); //remove duplicate document IDs from the “results” list
 
-            /* 5.7.7) Procesar término EXCLUDE */
-            if (keyword_node->type == EXCLUDE) {
+            if (keyword_node->type == EXCLUDE) { //if this keyword is an EXCLUDE, filter combined_results
                 if (combined_results) {
-                    /* Filtrar combined_results excluyendo los doc_id en results */
                     DocumentsList *filtered = malloc(sizeof(DocumentsList));
                     if (!filtered) {
                         perror("malloc");
@@ -161,7 +137,6 @@ int main(int argc, char **argv) {
                     filtered->tail = NULL;
                     filtered->number_documents = 0;
 
-                    /* Recorrer combined_results y copiar solo lo que no esté en results */
                     DocumentsListNode *curr = combined_results->head;
                     while (curr) {
                         int should_include = 1;
@@ -209,19 +184,14 @@ int main(int argc, char **argv) {
                         break;
                     }
                 } else {
-                    /* Si no había resultados previos, no hay nada que excluir */
                     free_documents_list(results);
                 }
             }
-            /* 5.7.8) Procesar término INCLUDE u OR */
             else {
                 if (!combined_results) {
-                    /* Primer término, simplemente asignar results */
                     combined_results = results;
                 } else {
-                    /* Intersección entre combined_results y results */
-                    DocumentsList *intersected =
-                        intersect_documents_lists(combined_results, results);
+                    DocumentsList *intersected = intersect_documents_lists(combined_results, results);
                     free_documents_list(combined_results);
                     free_documents_list(results);
                     combined_results = intersected;
@@ -237,19 +207,14 @@ int main(int argc, char **argv) {
         }
 
         /* 5.8) Si no hay resultados o la lista está vacía, liberar y continuar */
-        if (!has_results || !combined_results || !combined_results->head) {
+        if (!has_results || !combined_results || !combined_results->head) { //if there are no matching documents, free structures and continue
             if (combined_results) free_documents_list(combined_results);
             free_query_list(query);
-            printf("[DEBUG] No results to display for \"%s\".\n", query_str);
+            printf("[DEBUG] No results to display for \"%s\".\n", query_str); //we had errors so we used this to troubleshoot
             continue;
         }
 
-        /* -----------------------------------------------------------------
-         * 6) ORDENACIÓN Y MUESTRA DE RESULTADOS MEDIANTE sort_search.c
-         * ----------------------------------------------------------------- */
-
-        /* 6.1) Convertir DocumentsList en lista enlazada temporal de Document*
-         *      (temp_head) para que funcione sort_documents_by_relevance  */
+        //ranking of matching docs using sort_search:
         Document *temp_head = NULL;
         {
             DocumentsListNode *node2 = combined_results->head;
@@ -261,11 +226,9 @@ int main(int argc, char **argv) {
             }
         }
 
-        /* 6.2) Calcular relevancia y ordenar con merge-sort */
-        temp_head = sort_documents_by_relevance(temp_head, query_str);
+        temp_head = sort_documents_by_relevance(temp_head, query_str); //compute relevance scores and sort the temp_head list
 
-        /* 6.3) Mostrar los cinco primeros resultados en orden descendente */
-        printf("\nTop results for '%s':\n", query_str);
+        printf("\nTop results for '%s':\n", query_str); //display the top 5 results in descending relevance 
         Document *curr_doc = temp_head;
         int displayed = 0;
         while (curr_doc && displayed < 5) {
@@ -274,25 +237,24 @@ int main(int argc, char **argv) {
             if (curr_doc->body) {
                 int cnt = 0;
                 const char *p = curr_doc->body;
-                while (*p && cnt < 200) {
+                while (*p && cnt < 200) { //print a small snippet of the body 
                     putchar(*p);
                     p++;
                     cnt++;
                 }
-                if (*p) printf("...");
+                if (*p) printf("..."); //add ... at the end of the body to indicate there is more text
             }
             printf("\n---\n");
             printf("relevance score: %.2f\n", curr_doc->relevance);
-            curr_doc = curr_doc->next;
-            displayed++;
+            curr_doc = curr_doc->next; //move to next code 
+            displayed++; 
         }
         if (displayed == 0) {
             printf("No results to display.\n");
         }
         printf("\n[%d total results]\n", combined_results->number_documents);
 
-        /* 6.4) Interfaz de selección de documento */
-        if (displayed > 0) {
+        if (displayed > 0) { //to allow user to view a doc 
             int selection;
             printf("\nSelect document to view (0-%d): ",
                    (displayed - 1));
@@ -303,7 +265,6 @@ int main(int argc, char **argv) {
                 printf("Invalid input.\n");
                 free_query_list(query);
                 free_documents_list(combined_results);
-                /* No liberamos temp_head (los Document siguen en memoria) */
                 continue;
             }
             while (getchar() != '\n') { }
@@ -311,21 +272,20 @@ int main(int argc, char **argv) {
             if (selection >= 0 && selection < displayed) {
                 curr_doc = temp_head;
                 for (int k = 0; k < selection; k++) {
-                    curr_doc = curr_doc->next;
+                    curr_doc = curr_doc->next; //advance to the chosen doc
                 }
-                show_full_document(curr_doc);
+                show_full_document(curr_doc); //display details 
             } else {
                 printf("Invalid selection.\n");
             }
         }
-
-        /* 6.5) Liberar estructuras temporales (EXCEPTO los Document originales) */
+        
+        //free temporary data structures :
         free_query_list(query);
         free_documents_list(combined_results);
-        temp_head = NULL; // simplemente “olvidamos” la lista temporal
+        temp_head = NULL; 
     }
-
-    /* 7) Al salir del bucle, liberar índice y documentos globales */
+    //free reverse index and the docs:
     reverseIndexFree(reverse_index, true);
     free_documents(docs);
     free_queue_queries(&recent_queries);
