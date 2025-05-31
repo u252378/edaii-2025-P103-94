@@ -27,6 +27,8 @@ void free_query_list(QueryList *list) {
 
 /* Adds a new keyword to the query list */
 void add_keyword(QueryList *query_list, const char *keyword, QueryType type) {
+    if (!query_list || !keyword) return;
+
     QueryNode *new_node = malloc(sizeof(QueryNode));
     if (!new_node) return;
 
@@ -35,6 +37,7 @@ void add_keyword(QueryList *query_list, const char *keyword, QueryType type) {
         free(new_node);
         return;
     }
+
     new_node->type = type;
     new_node->next = NULL;
 
@@ -52,38 +55,49 @@ QueryList *parse_query(const char *input) {
     QueryList *list = create_query_list();
     if (!list) return NULL;
 
-    char buffer[256] = {0}; // Ensure buffer is initialized
-    int idx = 0;
+    char buffer[256] = {0}; // Buffer to hold individual keywords
+    size_t idx = 0;         // Index for the buffer
+    int keyword_found = 0;  // Track if at least one keyword is added
 
-    for (int i = 0;; i++) {
+    for (size_t i = 0;; i++) {
         char ch = input[i];
-        if (ch == ' ' || ch == '\0') {
+        if (ch == ' ' || ch == '\0') { // Split on spaces or end of input
             if (idx > 0) {
                 buffer[idx] = '\0'; // Null-terminate the buffer
                 QueryType type = INCLUDE;
 
+                // Detect special types: OR or EXCLUDE
                 if (buffer[0] == '!') {
                     type = OR;
-                    memmove(buffer, buffer + 1, strlen(buffer));
+                    memmove(buffer, buffer + 1, strlen(buffer)); // Shift buffer
                 } else if (buffer[0] == '-') {
                     type = EXCLUDE;
-                    memmove(buffer, buffer + 1, strlen(buffer));
+                    memmove(buffer, buffer + 1, strlen(buffer)); // Shift buffer
                 }
 
+                // Add the keyword to the query list
                 add_keyword(list, buffer, type);
-                idx = 0;
+                keyword_found = 1; // Mark that at least one valid keyword was added
+                idx = 0;           // Reset buffer index
             }
-            if (ch == '\0') break;
+
+            if (ch == '\0') break; // Exit the loop at the end of the input
         } else {
-            size_t idx = 0;
             if (idx < sizeof(buffer) - 1) {
-                buffer[idx++] = ch;
+                buffer[idx++] = ch; // Add character to the buffer
             } else {
                 fprintf(stderr, "Query word too long, truncating.\n");
                 break;
             }
         }
     }
+
+    // If no keywords were added, free the list and return NULL
+    if (!keyword_found) {
+        free_query_list(list);
+        return NULL;
+    }
+
     return list;
 }
 
