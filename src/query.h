@@ -1,6 +1,8 @@
 #ifndef QUERY_H
 #define QUERY_H
 
+#include "document.h" // This now contains the DocumentsList definition
+
 typedef enum { INCLUDE, EXCLUDE, OR } QueryType;
 
 // Node in the query linked list
@@ -33,5 +35,10 @@ void print_query_list(const QueryList *list);
 void init_queue_query(QueueQueries *queue);
 void enqueue_query(QueueQueries *queue, const char *keyword);
 void free_queue_queries(QueueQueries *queue);
+
+// Document list operations
+void free_documents_list(DocumentsList *list);
+DocumentsList *intersect_documents_lists(DocumentsList *list1, DocumentsList *list2);
+void remove_duplicate_results(DocumentsList *results);
 
 #endif

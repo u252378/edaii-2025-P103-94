@@ -4,31 +4,10 @@
 #include "sort_search.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h> // for tolower()
+#include <ctype.h>
 #include <string.h>
 
-// function to remove duplicate results in case there is any:
-void remove_duplicate_results(DocumentsList *results) {
-    if (!results || !results->head) return; // if the list is empty do nothing 
-    
-    DocumentsListNode *current = results->head;
-    while (current) {
-        DocumentsListNode *runner = current;
-        while (runner->next) {
-            if (runner->next->document->doc_id == current->document->doc_id) { // if next node is a duplicate (same document ID)
-                DocumentsListNode *temp = runner->next;
-                runner->next = runner->next->next; // skip the duplicate 
-                free(temp); // free the removed node
-            } 
-            else {
-                runner = runner->next; // move to the next node
-            }
-        }
-        current = current->next; // move to the next doc to compare
-    }
-}
-
-// function to show all details of a document: 
+// function to show all details of a document
 void show_full_document(Document *doc) {
     if (!doc) return;
     
@@ -38,11 +17,11 @@ void show_full_document(Document *doc) {
     printf("---------------------------------\n");
     printf("%s\n", doc->body);
 
-    if (doc->links) { // if the document contains links to other documents
+    if (doc->links) {
         printf("Links:\n");
         Link *current = doc->links;
         while (current != NULL) {
-            printf("- Document ID: %d\n", current->id); // print each linked document's ID
+            printf("- Document ID: %d\n", current->id);
             current = current->next;
         }
     }
@@ -51,7 +30,7 @@ void show_full_document(Document *doc) {
 }
 
 int main(int argc, char **argv) {
-    // check if dataset folder path is provided:
+    // check if dataset folder path is provided
     if (argc < 2) {
         printf("Usage: %s <dataset_folder>\n", argv[0]);
         return 1;
@@ -61,7 +40,7 @@ int main(int argc, char **argv) {
     Document *docs = load_documents_from_folder(argv[1]);
     if (!docs) {
         printf("No documents found or failed to load.\n");
-        return 1; // EXIT with error if loading fails
+        return 1;
     }
 
     // build the reverse index for fast keyword lookups
@@ -73,36 +52,41 @@ int main(int argc, char **argv) {
     }
 
     // interactive search (MAIN FEATURE OF OUR PROGRAM)
-    char keyword[256];
+    char query_str[256];
     QueueQueries recent_queries;
     init_queue_query(&recent_queries);
 
     while (1) {
-        printf("\n>>> HELLO! Welcome to our program, please enter a word/words that you want to look for (or type 'exit' to finish): ");
-        fflush(stdout); // force immediate display
+        printf("\n>>> Enter search query (use -word to exclude, or 'exit' to quit): ");
+        fflush(stdout);
 
         // read input line
-        if (fgets(keyword, sizeof(keyword), stdin) == NULL) {
-            break; // exit on EOF
+        if (fgets(query_str, sizeof(query_str), stdin) == NULL) {
+            break;
         }
 
         // remove newline character
-        keyword[strcspn(keyword, "\n")] = '\0';
+        query_str[strcspn(query_str, "\n")] = '\0';
 
         // check for exit command
-        if (strcmp(keyword, "exit") == 0) {
+        if (strcmp(query_str, "exit") == 0) {
             break;
         }
 
         // skip empty input
-        if (strlen(keyword) == 0) {
+        if (strlen(query_str) == 0) {
             continue;
         }
 
-        normalize_keyword(keyword); // normalize the search term
+        // parse query into keywords (handles INCLUDES/EXCLUDES)
+        QueryList *query = parse_query(query_str);
+        if (!query || !query->head) {
+            printf("\nInvalid query format\n");
+            continue;
+        }
 
         // add to recent queries
-        enqueue_query(&recent_queries, keyword);
+        enqueue_query(&recent_queries, query_str);
 
         // show recent searches
         printf("\nRecent searches:\n");
@@ -111,29 +95,106 @@ int main(int argc, char **argv) {
             printf("* %s\n", recent_queries.queries[index]);
         }
 
-        // search for documents containing the keyword
-        DocumentsList *results = reverseIndexGet(reverse_index, keyword);
-        if (!results || !results->head) {
-            printf("\nNo documents contain '%s'\n", keyword);
+        // search for documents containing the keywords
+        DocumentsList *combined_results = NULL;
+        QueryNode *keyword_node = query->head;
+        int first_keyword = 1;
+        
+        while (keyword_node) {
+            normalize_keyword(keyword_node->keyword);
+            DocumentsList *results = reverseIndexGet(reverse_index, keyword_node->keyword);
+            
+            if (!results || !results->head) {
+                if (keyword_node->type == INCLUDE) {
+                    printf("\nNo documents contain all required search terms\n");
+                    if (combined_results) free_documents_list(combined_results);
+                    combined_results = NULL;
+                    break;
+                }
+                keyword_node = keyword_node->next;
+                continue;
+            }
+            
+            remove_duplicate_results(results);
+            
+            if (first_keyword) {
+                combined_results = results;
+                first_keyword = 0;
+            } 
+            else if (keyword_node->type == EXCLUDE) {
+                // Handle excluded terms by removing matching documents
+                DocumentsList *filtered = malloc(sizeof(DocumentsList));
+                filtered->head = NULL;
+                filtered->tail = NULL;
+                filtered->number_documents = 0;
+                
+                DocumentsListNode *curr = combined_results->head;
+                while (curr) {
+                    int should_include = 1;
+                    DocumentsListNode *exclude_node = results->head;
+                    while (exclude_node) {
+                        if (curr->document->doc_id == exclude_node->document->doc_id) {
+                            should_include = 0;
+                            break;
+                        }
+                        exclude_node = exclude_node->next;
+                    }
+                    
+                    if (should_include) {
+                        DocumentsListNode *new_node = malloc(sizeof(DocumentsListNode));
+                        new_node->document = curr->document;
+                        new_node->next = NULL;
+                        
+                        if (filtered->tail) {
+                            filtered->tail->next = new_node;
+                        } else {
+                            filtered->head = new_node;
+                        }
+                        filtered->tail = new_node;
+                        filtered->number_documents++;
+                    }
+                    curr = curr->next;
+                }
+                
+                free_documents_list(combined_results);
+                free_documents_list(results);
+                combined_results = filtered;
+            }
+            else {
+                // Normal intersection for included terms
+                DocumentsList *intersected = intersect_documents_lists(combined_results, results);
+                free_documents_list(combined_results);
+                free_documents_list(results);
+                combined_results = intersected;
+            }
+            
+            if (!combined_results || !combined_results->head) {
+                printf("\nNo documents match all search criteria\n");
+                break;
+            }
+            
+            keyword_node = keyword_node->next;
+        }
+
+        if (!combined_results || !combined_results->head) {
+            free_query_list(query);
             continue;
         }
 
-        remove_duplicate_results(results);
-
         // convert results to Document* linked list
         Document *temp_head = NULL;
-        DocumentsListNode *node = results->head;
+        DocumentsListNode *node = combined_results->head;
         while (node) {
             node->document->next = temp_head;
             temp_head = node->document;
             node = node->next;
         }
 
-        // sort by relevance (using the new implementation)
+        // sort by relevance
         temp_head = sort_documents_by_relevance(temp_head);
 
         // display up to 5 results
-        printf("\nTop 5 results for '%s':\n", keyword);
+        printf("\nTop 5 results for '%s':\n", query_str);
         Document *curr = temp_head;
         int displayed_results = 0;
         
@@ -150,7 +211,7 @@ int main(int argc, char **argv) {
                     body_ptr++;
                     chars_printed++;
                 }
-                if (*body_ptr) printf("..."); // show ellipsis if there's more text
+                if (*body_ptr) printf("...");
             }
 
             printf("\n---\n");
@@ -160,8 +221,7 @@ int main(int argc, char **argv) {
             displayed_results++;
         }
 
-        // Simply show "5 total results" without counting
-        printf("\n[5 total results]\n");
+        printf("\n[%d total results]\n", combined_results->number_documents);
 
         // document selection
         if (displayed_results > 0) {
@@ -170,11 +230,13 @@ int main(int argc, char **argv) {
             fflush(stdout);
 
             if (scanf("%d", &selection) != 1) {
-                while (getchar() != '\n'); // clear input buffer
+                while (getchar() != '\n');
                 printf("Invalid input.\n");
+                free_query_list(query);
+                free_documents_list(combined_results);
                 continue;
             }
-            while (getchar() != '\n'); // clear remaining input
+            while (getchar() != '\n');
 
             // find selected document
             curr = temp_head;
@@ -190,6 +252,9 @@ int main(int argc, char **argv) {
                 printf("Invalid selection.\n");
             }
         }
+        
+        free_query_list(query);
+        free_documents_list(combined_results);
     }
 
     // free memory before exiting program
