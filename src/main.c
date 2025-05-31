@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
     }
     Document *doc_current = docs; //now, we compute the relevance score for each doc
     while (doc_current) {
-        doc_current->relevance = calculate_relevance(doc_current);
+        doc_current->relevance = calculate_relevance(doc_current,  "");
         doc_current = doc_current->next;
     }
     //build the reverse index for fast keyword lookups
@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
         }
 
         // Sort by relevance
-        temp_head = sort_documents_by_relevance(temp_head);
+        temp_head = sort_documents_by_relevance(temp_head, keyword);
 
         // Print top 5 formatted results
         printf("\n");
@@ -196,7 +196,7 @@ int main(int argc, char **argv) {
     }
 
     printf("\n=== Documents sorted by relevance ===\n");
-    docs = sort_documents_by_relevance(docs);
+    docs = sort_documents_by_relevance(docs,  "");
     print_sorted_documents(docs); //prints title and relevance score   
 
     //free memory before exiting program
