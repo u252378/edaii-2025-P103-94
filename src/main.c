@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include "query.h"
 
 /* Shows all details of a document */
 void show_full_document(Document *doc) {

@@ -162,31 +162,49 @@ DocumentsList *intersect_documents_lists(DocumentsList *list1, DocumentsList *li
     result->tail = NULL;
     result->number_documents = 0;
 
+    // Create a temporary array to store doc_ids from list2 for faster lookup
+    int *doc_ids = malloc(list2->number_documents * sizeof(int));
+    int doc_count = 0;
+    
+    // Store all doc_ids from list2
+    DocumentsListNode *node2 = list2->head;
+    while (node2 && doc_count < list2->number_documents) {
+        doc_ids[doc_count++] = node2->document->doc_id;
+        node2 = node2->next;
+    }
+
+    // Check each document in list1 against list2
     DocumentsListNode *node1 = list1->head;
     while (node1) {
-        DocumentsListNode *node2 = list2->head;
-        while (node2) {
-            if (node1->document->doc_id == node2->document->doc_id) {
-                DocumentsListNode *new_node = malloc(sizeof(DocumentsListNode));
-                if (!new_node) {
-                    free_documents_list(result);
-                    return NULL;
-                }
-                new_node->document = node1->document;
-                new_node->next = NULL;
-                
-                if (result->tail) {
-                    result->tail->next = new_node;
-                } else {
-                    result->head = new_node;
-                }
-                result->tail = new_node;
-                result->number_documents++;
+        int found = 0;
+        for (int i = 0; i < doc_count; i++) {
+            if (node1->document->doc_id == doc_ids[i]) {
+                found = 1;
                 break;
             }
-            node2 = node2->next;
+        }
+        
+        if (found) {
+            DocumentsListNode *new_node = malloc(sizeof(DocumentsListNode));
+            if (!new_node) {
+                free(doc_ids);
+                free_documents_list(result);
+                return NULL;
+            }
+            new_node->document = node1->document;
+            new_node->next = NULL;
+            
+            if (result->tail) {
+                result->tail->next = new_node;
+            } else {
+                result->head = new_node;
+            }
+            result->tail = new_node;
+            result->number_documents++;
         }
         node1 = node1->next;
     }
+    
+    free(doc_ids);
     return result;
 }
