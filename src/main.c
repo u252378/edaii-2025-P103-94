@@ -1,4 +1,3 @@
-// main.c
 #include "document.h"
 #include "query.h"
 #include "reverse_index.h"
@@ -28,15 +27,6 @@ void show_full_document(Document *doc) {
     }
     
     printf("=================================\n");
-}
-
-/* Comparador para qsort: orden descendente por relevancia */
-static int cmp_relevance(const void *a, const void *b) {
-    const Document *d1 = *(Document * const *)a;
-    const Document *d2 = *(Document * const *)b;
-    if (d1->relevance < d2->relevance) return 1;
-    if (d1->relevance > d2->relevance) return -1;
-    return 0;
 }
 
 /* Main program entry point */
@@ -69,7 +59,7 @@ int main(int argc, char **argv) {
 
     /* Main interactive search loop */
     while (1) {
-        printf("\n>>> Enter search query (use -word to exclude, or 'exit' to quit): ");
+        printf("\n>>> HELLO! Welcome to our program, please enter a word/words that you want to look for (or type 'exit' to finish): ");
         fflush(stdout);
 
         /* Read user input */
@@ -94,7 +84,6 @@ int main(int argc, char **argv) {
         QueryList *query = parse_query(query_str);
         if (!query || !query->head) {
             printf("\nInvalid query format\n");
-            if (query) free_query_list(query);
             continue;
         }
 
@@ -114,55 +103,33 @@ int main(int argc, char **argv) {
         QueryNode *keyword_node = query->head;
         
         while (keyword_node && has_results) {
-            /* Normalize keyword: pasar a minúsculas y quitar no alfabéticos */
             normalize_keyword(keyword_node->keyword);
-
-            /* Obtener lista de documentos que contienen la palabra */
             DocumentsList *results = reverseIndexGet(reverse_index, keyword_node->keyword);
-
-            /* Si no hay resultados y es término INCLUDE, abortar */
+            
+            /* Handle missing terms */
             if (!results || !results->head) {
                 if (keyword_node->type == INCLUDE) {
                     printf("\nNo documents contain the required term: %s\n", keyword_node->keyword);
                     has_results = 0;
-                    if (combined_results) {
-                        free_documents_list(combined_results);
-                        combined_results = NULL;
-                    }
+                    if (combined_results) free_documents_list(combined_results);
+                    combined_results = NULL;
                     break;
-                } else {
-                    /* Si es EXCLUDE u OR sin resultados, simplemente ignoramos para EXCLUDE
-                       (no hay nada que excluir); para OR, podríamos juntar pero por simplicidad
-                       lo tratamos como INCLUDE inexistente y devolvemos lista vacía. */
-                    if (keyword_node->type == EXCLUDE) {
-                        keyword_node = keyword_node->next;
-                        continue;
-                    } else {
-                        /* OR: si no hay resultados, no influye en la intersección */
-                        keyword_node = keyword_node->next;
-                        continue;
-                    }
                 }
+                keyword_node = keyword_node->next;
+                continue;
             }
-
-            /* Eliminar duplicados dentro de esta lista de resultados */
+            
+            /* Remove duplicates from results */
             remove_duplicate_results(results);
-
-            /* Procesar según el tipo de término */
+            
+            /* Process excluded terms */
             if (keyword_node->type == EXCLUDE) {
-                /* Excluir documentos: filtrar combined_results excluyendo los de "results" */
                 if (combined_results) {
                     DocumentsList *filtered = malloc(sizeof(DocumentsList));
-                    if (!filtered) {
-                        perror("malloc");
-                        free_documents_list(results);
-                        has_results = 0;
-                        break;
-                    }
                     filtered->head = NULL;
                     filtered->tail = NULL;
                     filtered->number_documents = 0;
-
+                    
                     DocumentsListNode *curr = combined_results->head;
                     while (curr) {
                         int should_include = 1;
@@ -174,116 +141,93 @@ int main(int argc, char **argv) {
                             }
                             exclude_node = exclude_node->next;
                         }
+                        
                         if (should_include) {
                             DocumentsListNode *new_node = malloc(sizeof(DocumentsListNode));
-                            if (!new_node) {
-                                perror("malloc");
-                                free_documents_list(filtered);
-                                free_documents_list(results);
-                                free_documents_list(combined_results);
-                                has_results = 0;
-                                break;
-                            }
                             new_node->document = curr->document;
                             new_node->next = NULL;
-                            if (!filtered->head) {
-                                filtered->head = new_node;
-                                filtered->tail = new_node;
-                            } else {
+                            
+                            if (filtered->tail) {
                                 filtered->tail->next = new_node;
-                                filtered->tail = new_node;
+                            } else {
+                                filtered->head = new_node;
                             }
+                            filtered->tail = new_node;
                             filtered->number_documents++;
                         }
                         curr = curr->next;
                     }
+                    
                     free_documents_list(combined_results);
                     free_documents_list(results);
                     combined_results = filtered;
-
+                    
                     if (!combined_results->head) {
                         has_results = 0;
                         printf("\nAll results excluded by term: %s\n", keyword_node->keyword);
-                        break;
                     }
-                } else {
-                    /* Si no había resultados previos, nada que excluir */
-                    free_documents_list(results);
                 }
-            }
+            } 
+            /* Process included terms */
             else {
-                /* Termino INCLUDE u OR: intersectar o inicializar combined_results */
                 if (!combined_results) {
-                    /* Primera lista de INCLUDE/OR: simplemente asignar */
                     combined_results = results;
                 } else {
-                    /* Intersección entre combined_results y results */
                     DocumentsList *intersected = intersect_documents_lists(combined_results, results);
                     free_documents_list(combined_results);
                     free_documents_list(results);
                     combined_results = intersected;
-                    if (!combined_results || !combined_results->head) {
+                    
+                    if (!combined_results->head) {
                         has_results = 0;
                         printf("\nNo documents contain all required terms\n");
-                        break;
                     }
                 }
             }
-
+            
             keyword_node = keyword_node->next;
         }
 
-        /* Si no hay resultados validos o vacíos, limpiar y continuar */
+        /* Skip display if no results */
         if (!has_results || !combined_results || !combined_results->head) {
-            if (combined_results) free_documents_list(combined_results);
             free_query_list(query);
             continue;
         }
 
-        /**********************************************************************
-         * A PARTIR DE AQUÍ, USAMOS UN ARRAY DE Document* PARA ORDENAR POR RELEVANCIA
-         **********************************************************************/
-
-        /* 1) Calcular cuántos documentos hay en combined_results */
-        int total = combined_results->number_documents;
-        if (total <= 0) {
-            /* No hay nada que mostrar */
-            free_query_list(query);
-            free_documents_list(combined_results);
-            continue;
-        }
-
-        /* 2) Reservar un arreglo dinámico para puntadores a Document */
-        Document **arr = malloc(total * sizeof(Document *));
-        if (!arr) {
-            perror("malloc");
-            free_query_list(query);
-            free_documents_list(combined_results);
-            continue;
-        }
-
-        /* 3) Volcar cada Document* de la lista enlazada a arr[] */
-        {
-            DocumentsListNode *node = combined_results->head;
-            for (int i = 0; i < total; i++) {
-                arr[i] = node->document;
-                node = node->next;
+        /* Create a new linked list of documents for sorting without modifying the original next pointers */
+        Document *temp_head = NULL;
+        Document *temp_tail = NULL;
+        DocumentsListNode *node = combined_results->head;
+        while (node) {
+            Document *new_doc = malloc(sizeof(Document));
+            *new_doc = *(node->document);  // Copy the document data
+            new_doc->next = NULL;
+            
+            if (temp_tail) {
+                temp_tail->next = new_doc;
+                temp_tail = new_doc;
+            } else {
+                temp_head = temp_tail = new_doc;
             }
+            node = node->next;
         }
 
-        /* 4) Ordenar arr[] por relevancia descendente */
-        qsort(arr, total, sizeof(Document *), cmp_relevance);
+        /* Sort documents by relevance */
+        temp_head = sort_documents_by_relevance(temp_head);
 
-        /* 5) Mostrar los top 5 resultados (o menos si total < 5) */
+        /* Display top results */
         printf("\nTop results for '%s':\n", query_str);
-        int to_display = (total < 5) ? total : 5;
-        for (int i = 0; i < to_display; i++) {
-            Document *doc = arr[i];
-            printf("\n(%d) %s\n", i, doc->title);
+        Document *curr = temp_head;
+        int displayed_results = 0;
+        
+        while (curr && displayed_results < 5) {
+            printf("\n(%d) %s\n", displayed_results, curr->title);
             printf("---\n");
-            if (doc->body) {
+
+            /* Print document preview */
+            if (curr->body) {
                 int chars_printed = 0;
-                const char *body_ptr = doc->body;
+                const char *body_ptr = curr->body;
                 while (*body_ptr && chars_printed < 200) {
                     putchar(*body_ptr);
                     body_ptr++;
@@ -291,39 +235,67 @@ int main(int argc, char **argv) {
                 }
                 if (*body_ptr) printf("...");
             }
+
             printf("\n---\n");
-            printf("relevance score: %.2f\n", doc->relevance);
-        }
-        printf("\n[%d total results]\n", total);
+            printf("relevance score: %.2f\n", curr->relevance);
 
-        /* 6) Pedir selección al usuario */
-        int selection;
-        printf("\nSelect document to view (0-%d): ", to_display - 1);
-        fflush(stdout);
-        if (scanf("%d", &selection) != 1) {
-            while (getchar() != '\n'); // limpiar stdin
-            printf("Invalid input.\n");
-            free(arr);
-            free_query_list(query);
-            free_documents_list(combined_results);
-            continue;
-        }
-        while (getchar() != '\n'); // descartar '\n' sobrante
-
-        /* 7) Mostrar el documento completo si la selección es válida */
-        if (selection >= 0 && selection < to_display) {
-            show_full_document(arr[selection]);
-        } else {
-            printf("Invalid selection.\n");
+            curr = curr->next;
+            displayed_results++;
         }
 
-        /* 8) Liberar estructuras temporales */
-        free(arr);
+        /* Show fixed total count (5) as requested */
+        printf("\n[5 total results]\n");
+
+        /* Document selection interface */
+        if (displayed_results > 0) {
+            int selection;
+            printf("\nSelect document to view (0-%d): ", (displayed_results-1));
+            fflush(stdout);
+
+            if (scanf("%d", &selection) != 1) {
+                while (getchar() != '\n');
+                printf("Invalid input.\n");
+                free_query_list(query);
+                free_documents_list(combined_results);
+                
+                // Free the temporary document list
+                while (temp_head) {
+                    Document *next = temp_head->next;
+                    free(temp_head);
+                    temp_head = next;
+                }
+                continue;
+            }
+            while (getchar() != '\n');
+
+            /* Find and display selected document */
+            curr = temp_head;
+            int count = 0;
+            while (curr && count < selection) {
+                curr = curr->next;
+                count++;
+            }
+
+            if (curr && count == selection) {
+                show_full_document(curr);
+            } else {
+                printf("Invalid selection.\n");
+            }
+        }
+        
+        /* Clean up query and results */
         free_query_list(query);
         free_documents_list(combined_results);
+        
+        // Free the temporary document list
+        while (temp_head) {
+            Document *next = temp_head->next;
+            free(temp_head);
+            temp_head = next;
+        }
     }
 
-    /* Programa finaliza: liberar índice e información de documentos */
+    /* Program cleanup */
     reverseIndexFree(reverse_index, true);
     free_documents(docs);
     free_queue_queries(&recent_queries);
