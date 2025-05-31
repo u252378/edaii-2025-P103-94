@@ -262,7 +262,7 @@ int main(int argc, char **argv) {
         }
 
         /* 6.2) Calcular relevancia y ordenar con merge-sort */
-        temp_head = sort_documents_by_relevance(temp_head);
+        temp_head = sort_documents_by_relevance(temp_head, query_str);
 
         /* 6.3) Mostrar los cinco primeros resultados en orden descendente */
         printf("\nTop results for '%s':\n", query_str);

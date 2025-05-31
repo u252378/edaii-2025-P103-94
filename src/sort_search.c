@@ -2,104 +2,109 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// function to calculate the relevance score of a document based on body length, number of links, and title length:
-float calculate_relevance(Document *doc) {
-  if (!doc) return 0.0f;
-  
-  float relevance = 0.0f; // initialize relevance score 
-  
-  // 1. Weight for body length (50%)
-  if (doc->body) {
-    relevance += strlen(doc->body) / 2000.0f; // add 1.0 for every 2000 characters in the body
-  }
-  
-  // 2. Weight for outgoing links (30%)
-  Link *link = doc->links; // start from first link
-  int unique_links = 0;
-  while (link) {
-    if (link->id != doc->doc_id) { // ignore self-referencing links 
-      unique_links++;
+float calculate_relevance(Document *doc, const char *keyword) {
+    if (!doc || !keyword) return 0.0f;
+    
+    float relevance = 0.0f;
+    
+    // Keyword frequency in body (60% weight)
+    if (doc->body) {
+        const char *body_ptr = doc->body;
+        int keyword_count = 0;
+        int word_count = 0;
+        char word[256];
+        int word_idx = 0;
+        
+        while (*body_ptr) {
+            if (isalpha((unsigned char)*body_ptr)) {
+                word[word_idx++] = tolower((unsigned char)*body_ptr);
+            } else if (word_idx > 0) {
+                word[word_idx] = '\0';
+                word_count++;
+                if (strcmp(word, keyword) == 0) {
+                    keyword_count++;
+                }
+                word_idx = 0;
+            }
+            body_ptr++;
+        }
+        
+        if (word_count > 0) {
+            relevance += 0.6f * ((float)keyword_count / word_count);
+        }
     }
-    link = link->next;
-  }
-  relevance += unique_links * 0.3f; // each unique link adds 0.3 to relevance
-  
-  // 3. Weight for title length (20%)
-  if (doc->title) {
-    relevance += strlen(doc->title) * 0.05f; // add 0.05 per character in the title
-  }
-  return relevance;
+    
+    // Keyword in title (30% weight)
+    if (doc->title && strstr(doc->title, keyword) != NULL) {
+        relevance += 0.3f;
+    }
+    
+    // Outgoing links (10% weight)
+    Link *link = doc->links;
+    int unique_links = 0;
+    while (link) {
+        if (link->id != doc->doc_id) {
+            unique_links++;
+        }
+        link = link->next;
+    }
+    relevance += 0.1f * (unique_links > 5 ? 1.0f : (float)unique_links / 5.0f);
+    
+    return relevance;
 }
 
-// this function splits a linked list into two halves, use this for merge sort (divide step).
 void split_list(Document *source, Document **front, Document **back) {
-  Document *slow = source; // slow pointer (moves one step at a time)
-  Document *fast = source->next; // fast pointer (moves two steps at a time)
-
-  while (fast) { // move fast pointer until it reaches the end of the list
-    fast = fast->next;
-    if (fast) {
-      slow = slow->next;
-      fast = fast->next;
+    Document *slow = source;
+    Document *fast = source->next;
+    
+    while (fast) {
+        fast = fast->next;
+        if (fast) {
+            slow = slow->next;
+            fast = fast->next;
+        }
     }
-  }
-
-  // now slow is in the middle of the list
-  *front = source; // front part starts at the beginning
-  *back = slow->next; // back part starts after the middle
-  slow->next = NULL; // break the list into two parts
+    
+    *front = source;
+    *back = slow->next;
+    slow->next = NULL;
 }
 
-// this function merges two sorted lists based on document relevance.
-// the most relevant (higher score) document comes first
 Document *sorted_merge(Document *a, Document *b) {
-  Document *result = NULL;
-  // base cases: if one list is empty
-  if (!a)
-    return b;
-  if (!b)
-    return a;
-
-  if (a->relevance >= b->relevance) { // compare relevance values to decide the order
-    result = a;
-    result->next = sorted_merge(a->next, b); // merge the rest
-  } else {
-    result = b;
-    result->next = sorted_merge(a, b->next); // merge the rest
-  }
-
-  return result;
+    Document *result = NULL;
+    
+    if (!a) return b;
+    if (!b) return a;
+    
+    if (a->relevance >= b->relevance) {
+        result = a;
+        result->next = sorted_merge(a->next, b);
+    } else {
+        result = b;
+        result->next = sorted_merge(a, b->next);
+    }
+    
+    return result;
 }
 
-// this function sorts the linked list using merge sort algorithm (because It has O(n log n) time complexity in all cases), it sorts documents in descending order by relevance score
 void sort_by_relevance(Document **headRef) {
-  Document *head = *headRef;
-  if (!head || !head->next) return;
-  
-  Document *a, *b;
-  split_list(head, &a, &b);
-  sort_by_relevance(&a);
-  sort_by_relevance(&b);
-  *headRef = sorted_merge(a, b);
+    Document *head = *headRef;
+    if (!head || !head->next) return;
+    
+    Document *a, *b;
+    split_list(head, &a, &b);
+    sort_by_relevance(&a);
+    sort_by_relevance(&b);
+    *headRef = sorted_merge(a, b);
 }
 
-Document *sort_documents_by_relevance(Document *docs) { // sorting
-  // first calculate relevance:
-  Document *current = docs;
-  while (current) {
-    current->relevance = calculate_relevance(current);
-    current = current->next;
-  }
-  
-  // the sort
-  sort_by_relevance(&docs);
-  return docs;
-}
-
-void print_sorted_documents(const Document *docs) { // print sorted documents
-  while (docs) {
-    printf("Title: %s\n", docs->title);
-    printf("Relevance: %.2f\n", docs->relevance);
-    docs = docs->next;
-  }
+Document *sort_documents_by_relevance(Document *docs, const char *keyword) {
+    Document *current = docs;
+    while (current) {
+        current->relevance = calculate_relevance(current, keyword);
+        current = current->next;
+    }
+    
+    sort_by_relevance(&docs);
+    return docs;
 }
