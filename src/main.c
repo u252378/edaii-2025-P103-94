@@ -209,7 +209,7 @@ int main(int argc, char **argv) {
                         break;
                     }
                 } else {
-                    /* Si no había combinados aún, no hay nada que excluir */
+                    /* Si no había resultados previos, no hay nada que excluir */
                     free_documents_list(results);
                 }
             }
@@ -240,6 +240,7 @@ int main(int argc, char **argv) {
         if (!has_results || !combined_results || !combined_results->head) {
             if (combined_results) free_documents_list(combined_results);
             free_query_list(query);
+            printf("[DEBUG] No results to display for \"%s\".\n", query_str);
             continue;
         }
 
@@ -250,13 +251,14 @@ int main(int argc, char **argv) {
         /* 6.1) Convertir DocumentsList en lista enlazada temporal de Document*
          *      (temp_head) para que funcione sort_documents_by_relevance  */
         Document *temp_head = NULL;
-        DocumentsListNode *node = combined_results->head;
-        while (node) {
-            /* Enlazar los Document* en una lista separada */
-            Document *d = node->document;
-            d->next = temp_head;
-            temp_head = d;
-            node = node->next;
+        {
+            DocumentsListNode *node2 = combined_results->head;
+            while (node2) {
+                Document *d = node2->document;
+                d->next = temp_head;
+                temp_head = d;
+                node2 = node2->next;
+            }
         }
 
         /* 6.2) Calcular relevancia y ordenar con merge-sort */
@@ -264,14 +266,14 @@ int main(int argc, char **argv) {
 
         /* 6.3) Mostrar los cinco primeros resultados en orden descendente */
         printf("\nTop results for '%s':\n", query_str);
-        Document *curr = temp_head;
+        Document *curr_doc = temp_head;
         int displayed = 0;
-        while (curr && displayed < 5) {
-            printf("\n(%d) %s\n", displayed, curr->title);
+        while (curr_doc && displayed < 5) {
+            printf("\n(%d) %s\n", displayed, curr_doc->title);
             printf("---\n");
-            if (curr->body) {
+            if (curr_doc->body) {
                 int cnt = 0;
-                const char *p = curr->body;
+                const char *p = curr_doc->body;
                 while (*p && cnt < 200) {
                     putchar(*p);
                     p++;
@@ -280,14 +282,13 @@ int main(int argc, char **argv) {
                 if (*p) printf("...");
             }
             printf("\n---\n");
-            printf("relevance score: %.2f\n", curr->relevance);
-            curr = curr->next;
+            printf("relevance score: %.2f\n", curr_doc->relevance);
+            curr_doc = curr_doc->next;
             displayed++;
         }
         if (displayed == 0) {
             printf("No results to display.\n");
         }
-        /* Si queremos indicar “[5 total results]” siempre, aunque haya menos: */
         printf("\n[%d total results]\n", combined_results->number_documents);
 
         /* 6.4) Interfaz de selección de documento */
@@ -298,25 +299,21 @@ int main(int argc, char **argv) {
             fflush(stdout);
 
             if (scanf("%d", &selection) != 1) {
-                while (getchar() != '\n') {
-                }
+                while (getchar() != '\n') { }
                 printf("Invalid input.\n");
-                /* Liberar antes de continuar al siguiente prompt */
                 free_query_list(query);
                 free_documents_list(combined_results);
-                /* (No liberar temp_head, pues estamos reutilizando los mismos Document) */
+                /* No liberamos temp_head (los Document siguen en memoria) */
                 continue;
             }
-            while (getchar() != '\n')
-                ;
+            while (getchar() != '\n') { }
 
             if (selection >= 0 && selection < displayed) {
-                /* Volver a recorrer temp_head hasta llegar al índice elegido */
-                curr = temp_head;
+                curr_doc = temp_head;
                 for (int k = 0; k < selection; k++) {
-                    curr = curr->next;
+                    curr_doc = curr_doc->next;
                 }
-                show_full_document(curr);
+                show_full_document(curr_doc);
             } else {
                 printf("Invalid selection.\n");
             }
@@ -325,11 +322,7 @@ int main(int argc, char **argv) {
         /* 6.5) Liberar estructuras temporales (EXCEPTO los Document originales) */
         free_query_list(query);
         free_documents_list(combined_results);
-
-        /* IMPORTANTE: temp_head es solo punteros a Document ya existentes.
-         * No lo liberamos con free(): eso borraría los Document mismos.
-         * Simplemente “desechamos” el puntero temp_head asignándole NULL: */
-        temp_head = NULL;
+        temp_head = NULL; // simplemente “olvidamos” la lista temporal
     }
 
     /* 7) Al salir del bucle, liberar índice y documentos globales */
