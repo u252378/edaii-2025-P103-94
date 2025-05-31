@@ -64,13 +64,6 @@ int main(int argc, char **argv) {
         return 1; // EXIT with error if loading fails
     }
 
-    // now, we compute the relevance score for each doc
-    Document *doc_current = docs;
-    while (doc_current) {
-        doc_current->relevance = calculate_relevance(doc_current, "");
-        doc_current = doc_current->next;
-    }
-
     // build the reverse index for fast keyword lookups
     ReverseIndex *reverse_index = build_reverse_index(docs);
     if (!reverse_index) {
@@ -85,7 +78,7 @@ int main(int argc, char **argv) {
     init_queue_query(&recent_queries);
 
     while (1) {
-        printf("\n>>> Enter search term (or 'exit' to quit): ");
+        printf("\n>>> HELLO! Welcome to our program, please enter a word/words that you want to look for (or type 'exit' to finish): ");
         fflush(stdout); // force immediate display
 
         // read input line
@@ -136,8 +129,8 @@ int main(int argc, char **argv) {
             node = node->next;
         }
 
-        // sort by relevance using the search term
-        temp_head = sort_documents_by_relevance(temp_head, keyword);
+        // sort by relevance (using the new implementation)
+        temp_head = sort_documents_by_relevance(temp_head);
 
         // print top results
         printf("\nTop results for '%s':\n", keyword);
@@ -169,7 +162,7 @@ int main(int argc, char **argv) {
             }
 
             printf("\n---\n");
-            printf("relevance score: %.0f\n", curr->relevance);
+            printf("relevance score: %.2f\n", curr->relevance);
 
             curr = curr->next;
             index++;
@@ -199,19 +192,7 @@ int main(int argc, char **argv) {
             }
 
             if (curr && count == selection) {
-                printf("\nID\n%d\n", curr->doc_id);
-                printf("TITLE\n%s\n", curr->title);
-                printf("RELEVANCE SCORE\n%.0f\n", curr->relevance);
-                printf("BODY\n%s", curr->body);
-                
-                if (curr->links) {
-                    Link *link = curr->links;
-                    while (link) {
-                        printf("[link](%d)\n", link->id);
-                        link = link->next;
-                    }
-                }
-                printf("-----------------------------\n");
+                show_full_document(curr);
             } else {
                 printf("Invalid selection.\n");
             }
