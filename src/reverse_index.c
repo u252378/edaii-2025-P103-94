@@ -25,34 +25,38 @@ static int hash(char *word,int slotsCount) { // function to hash a word into a n
 
 void reverseIndexPut(ReverseIndex *index, char *word, DocumentsListNode *node) {
   int slot = hash(word, index->slotsCount);
-  ReverseIndexSlot *slotPtr = index->slots[slot]; //get slot pointer
+  ReverseIndexSlot *slotPtr = index->slots[slot]; // get slot pointer
 
-  if (!slotPtr) { //in case slot is empty
+  if (!slotPtr) { // in case slot is empty
     slotPtr = malloc(sizeof(ReverseIndexSlot));
     slotPtr->keys = NULL; 
     slotPtr->keysCount = 0;
     index->slots[slot] = slotPtr;
   }
 
-  ReverseIndexKey *key = slotPtr->keys; //traverse keys in slot 
+  ReverseIndexKey *key = slotPtr->keys;
   while (key) {
-    if (strcmp(key->word, word) == 0) { //word already exists 
+    if (strcmp(key->word, word) == 0) {
       DocumentsListNode *current = key->values->head;
-      while (current) { //check for duplicate 
+      while (current) {
         if (current->document->doc_id == node->document->doc_id) {
-          free(node); //free and skip the duplicate
-          return; 
+          return; // document already indexed for this word
         }
         current = current->next;
       }
-    
-      if (!key->values->head) { //append node to document list
-        key->values->head = node;
-        key->values->tail = node;
-      } 
-      else {
-        key->values->tail->next = node;
-        key->values->tail = node;
+
+      // Create a copy of the node
+      DocumentsListNode *copyNode = malloc(sizeof(DocumentsListNode));
+      if (!copyNode) return;
+      copyNode->document = node->document;
+      copyNode->next = NULL;
+
+      if (!key->values->head) {
+        key->values->head = copyNode;
+        key->values->tail = copyNode;
+      } else {
+        key->values->tail->next = copyNode;
+        key->values->tail = copyNode;
       }
       key->values->number_documents++;
       return;
@@ -60,20 +64,23 @@ void reverseIndexPut(ReverseIndex *index, char *word, DocumentsListNode *node) {
     key = key->next;
   }
 
-  //in case a word is new: create and insert new key
+  // Word not found: create a new key
   ReverseIndexKey *newKey = malloc(sizeof(ReverseIndexKey));
-  newKey->word = strdup(word); //copy the word 
-  DocumentsList *newList = malloc(sizeof(DocumentsList)); //create new list 
+  newKey->word = strdup(word);
+
+  DocumentsList *newList = malloc(sizeof(DocumentsList));
   newList->head = node;
   newList->tail = node;
   newList->number_documents = 1;
   node->next = NULL;
+
   newKey->values = newList;
-  newKey->next = slotPtr->keys; //insert at head of list 
+  newKey->next = slotPtr->keys;
   slotPtr->keys = newKey;
   slotPtr->keysCount++;
   index->unique_keywords++;
 }
+
 
 DocumentsList *reverseIndexGet(ReverseIndex *index,char *word) { // function to get the list of documents for a word
   int slot = hash(word, index->slotsCount); // get index using hash
@@ -157,6 +164,9 @@ void reverseIndexDocument(ReverseIndex *reverse_index, Document *document) {
         list->document = document;
         list->next = NULL;
         reverseIndexPut(reverse_index, token, list); //insert token into index 
+       
+
+
       }
     }
     token = strtok(NULL, " \t\n\r.,;:!?()[]{}<>\"");
