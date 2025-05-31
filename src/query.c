@@ -75,6 +75,7 @@ QueryList *parse_query(const char *input) {
             }
             if (ch == '\0') break;
         } else {
+            size_t idx = 0;
             if (idx < sizeof(buffer) - 1) {
                 buffer[idx++] = ch;
             } else {
