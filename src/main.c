@@ -133,7 +133,7 @@ int main(int argc, char **argv) {
         temp_head = sort_documents_by_relevance(temp_head);
 
         // print top results
-        printf("\nTop results for '%s':\n", keyword);
+        printf("\nTop 5 results for '%s':\n", keyword);  // Fixed to say "Top 5" instead of "Top 10"
         Document *curr = temp_head;
         int index = 0, total_results = 0;
 
@@ -144,8 +144,8 @@ int main(int argc, char **argv) {
             counter = counter->next;
         }
 
-        // display up to 5 results with preview (fixed to show all 5 when available)
-        while (curr && index < 5) {  // Now properly shows up to 5 results
+        // display up to 5 results with preview
+        while (curr && index < 5) {
             printf("\n(%d) %s\n", index, curr->title);
             printf("---\n");
 
@@ -173,7 +173,7 @@ int main(int argc, char **argv) {
         // document selection
         if (index > 0) {
             int selection;
-            printf("\nSelect document to view (0-%d): ", (index < 5 ? index-1 : 4)); // Fixed range display
+            printf("\nSelect document to view (0-%d): ", index-1);
             fflush(stdout);
 
             if (scanf("%d", &selection) != 1) {
@@ -192,7 +192,7 @@ int main(int argc, char **argv) {
             }
 
             if (curr && count == selection) {
-                show_full_document(curr); // show full document when selected
+                show_full_document(curr);
             } else {
                 printf("Invalid selection.\n");
             }
