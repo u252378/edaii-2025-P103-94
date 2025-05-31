@@ -51,6 +51,7 @@ void show_full_document(Document *doc) {
 }
 
 int main(int argc, char **argv) {
+     printf("=== INICIANDO DEBUG ===");
     // check if dataset folder path is provided:
     if (argc < 2) {
         printf("Usage: %s <dataset_folder>\n", argv[0]);
@@ -58,6 +59,7 @@ int main(int argc, char **argv) {
     }
 
     // load all docs from the folder
+     printf("\n[1] Cargando documentos...");
     Document *docs = load_documents_from_folder(argv[1]);
     if (!docs) {
         printf("No documents found or failed to load.\n");
@@ -65,6 +67,7 @@ int main(int argc, char **argv) {
     }
 
     // build the reverse index for fast keyword lookups
+    printf("[2] Construyendo índice...");
     ReverseIndex *reverse_index = build_reverse_index(docs);
     if (!reverse_index) {
         printf("Failed to build reverse index.\n");
