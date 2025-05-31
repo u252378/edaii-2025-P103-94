@@ -194,21 +194,12 @@ int main(int argc, char **argv) {
             continue;
         }
 
-        /* Create a new linked list of documents for sorting without modifying the original next pointers */
+        /* Convert to Document linked list for sorting */
         Document *temp_head = NULL;
-        Document *temp_tail = NULL;
         DocumentsListNode *node = combined_results->head;
         while (node) {
-            Document *new_doc = malloc(sizeof(Document));
-            *new_doc = *(node->document);  // Copy the document data
-            new_doc->next = NULL;
-            
-            if (temp_tail) {
-                temp_tail->next = new_doc;
-                temp_tail = new_doc;
-            } else {
-                temp_head = temp_tail = new_doc;
-            }
+            node->document->next = temp_head;
+            temp_head = node->document;
             node = node->next;
         }
 
@@ -257,13 +248,6 @@ int main(int argc, char **argv) {
                 printf("Invalid input.\n");
                 free_query_list(query);
                 free_documents_list(combined_results);
-                
-                // Free the temporary document list
-                while (temp_head) {
-                    Document *next = temp_head->next;
-                    free(temp_head);
-                    temp_head = next;
-                }
                 continue;
             }
             while (getchar() != '\n');
@@ -286,13 +270,6 @@ int main(int argc, char **argv) {
         /* Clean up query and results */
         free_query_list(query);
         free_documents_list(combined_results);
-        
-        // Free the temporary document list
-        while (temp_head) {
-            Document *next = temp_head->next;
-            free(temp_head);
-            temp_head = next;
-        }
     }
 
     /* Program cleanup */
