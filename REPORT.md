@@ -11,6 +11,7 @@ read/write and their relation. Clearly distinguish components which are volatile
 memory) vs persistent (files in disk) using two different colors.
 
 
+![foto_ejercicios_1_2](https://github.com/user-attachments/assets/497cbc05-c643-4ba1-b67a-11d9e3d3a8d2)
 
 
 - Table with 3 columns (description, Big-O, justification) with one row for each of the following
