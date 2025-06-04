@@ -14,27 +14,14 @@ memory) vs persistent (files in disk) using two different colors.
 ![foto_ejercicios_1_2](https://github.com/user-attachments/assets/497cbc05-c643-4ba1-b67a-11d9e3d3a8d2)
 
 
-- Table with 3 columns (description, Big-O, justification) with one row for each of the following
+- Runtime complexity analysis table with 3 columns (description, Big-O, justification) with one row for each of the following
 (in this exact order):
 
-
-
-
-
-
-– Runtime complexity analysis of parsing a document into the struct (including adding
-the links to the list)
-– Runtime complexity analysis of parsing a query into the struct
-– Runtime complexity analysis of counting the neighbours in the graph
-– Runtime complexity analysis of counting the neighbours of a document in the graph
-– Runtime complexity analysis of finding the documents that contain a keyword in the
-reverse-index
-– Runtime complexity analysis of finding the documents that match all keywords in the
-query
-– Runtime complexity analysis of sorting the documents according to the relevance score
-
-
-
+![table1](https://github.com/user-attachments/assets/4fe5e19f-aca4-459a-a8f9-64009b828936)
+![table2](https://github.com/user-attachments/assets/51e8f361-7ec7-465a-af2e-f50b2a00c060)
+![table3](https://github.com/user-attachments/assets/dffeaa88-9e81-4279-b533-752c73540a09)
+![table4](https://github.com/user-attachments/assets/8542aab2-9ebd-4cbb-b2fb-0d65c41b30bc)
+![table5](https://github.com/user-attachments/assets/0af05997-e165-4e66-98cb-2e65100b38d0)
 
 
 - Plot the search time with/without the reverse index for the different-sized datasets and discuss
